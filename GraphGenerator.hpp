@@ -4,7 +4,7 @@
 
 struct LinkInfo {
     int count; // количество элементов
-    int vertices[4]; // связные вершины
+    int vertices[5]; // связные вершины
 };
 
 class GraphGenerator {
@@ -119,9 +119,10 @@ void GraphGenerator::MakeTriangleEdges(int v, LinkInfo *edges) {
     if (vx > 0 || (vx == 0 && IsUpVertex(v)))
         edges[v].vertices[edges[v].count++] = v - 1;
 
+    edges[v].vertices[edges[v].count++] = v;
+
     if (vx < nx - 1 || (vx == nx - 1 && !IsUpVertex(v)))
         edges[v].vertices[edges[v].count++] = v + 1;
-
 
     if (vy < ny - 1 && !IsUpVertex(v)) {
         int vertex = Index2Vertex((vy + 1) * nx + vx);
@@ -135,14 +136,14 @@ void GraphGenerator::MakeTriangleEdges(int v, LinkInfo *edges) {
 
 // формирование рёбер для прямоугольных вершин
 void GraphGenerator::MakeRectangleEdges(int v, LinkInfo *edges) {
-    int dx[4] = { 0, -1, 1, 0 };
-    int dy[4] = { -1, 0, 0, 1 };
+    int dx[5] = { 0, -1, 0, 1, 0 };
+    int dy[5] = { -1, 0, 0, 0, 1 };
 
     int index = Vertex2Index(v);
     int vx = index % nx;
     int vy = index / nx;
 
-    for (int k = 0; k < 4; k++) {
+    for (int k = 0; k < 5; k++) {
         int x = vx + dx[k];
         int y = vy + dy[k];
 
@@ -150,6 +151,7 @@ void GraphGenerator::MakeRectangleEdges(int v, LinkInfo *edges) {
             continue;
 
         int index2 = y * nx + x;
+
         int vertex = Index2Vertex(index2);
 
         if ((dx[k] == -1 || dy[k] == 1) && IsTriangleVertex(vertex))
