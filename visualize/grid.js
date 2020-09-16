@@ -116,12 +116,16 @@ Grid.prototype.MakeTriangleEdges = function(v) {
     let vx = index % this.nx
     let vy = Math.floor(index / this.nx)
 
-    if (vx < this.nx - 1 || (vx == this.nx - 1 && !this.IsUpVertex(v)))
-        this.edges[v].push(v + 1)
+    if (vy > 0 && this.IsUpVertex(v))
+        this.edges[v].push(this.Index2Vertex((vy - 1) * this.nx + vx))
 
     if (vx > 0 || (vx == 0 && this.IsUpVertex(v)))
         this.edges[v].push(v - 1)
 
+    this.edges[v].push(v)
+
+    if (vx < this.nx - 1 || (vx == this.nx - 1 && !this.IsUpVertex(v)))
+        this.edges[v].push(v + 1)
 
     if (vy < this.ny - 1 && !this.IsUpVertex(v)) {
         let vertex = this.Index2Vertex((vy + 1) * this.nx + vx)
@@ -131,22 +135,18 @@ Grid.prototype.MakeTriangleEdges = function(v) {
 
         this.edges[v].push(vertex)
     }
-
-    if (vy > 0 && this.IsUpVertex(v)) {
-        this.edges[v].push(this.Index2Vertex((vy - 1) * this.nx + vx))
-    }
 }
 
 // формирование рёбер для прямоугольников
 Grid.prototype.MakeRectangleEdges = function(v) {
-    let dx = [1, 0, -1, 0]
-    let dy = [0, 1, 0, -1]
+    let dx = [0, -1, 0, 1, 0]
+    let dy = [-1, 0, 0, 0, 1]
 
     let index = this.Vertex2Index(v)
     let vx = index % this.nx
     let vy = Math.floor(index / this.nx)
 
-    for (let k = 0; k < 4; k++) {
+    for (let k = 0; k < 5; k++) {
         let x = vx + dx[k]
         let y = vy + dy[k]
 
@@ -177,6 +177,39 @@ Grid.prototype.MakeEdges = function() {
             this.MakeRectangleEdges(v)
         }
     }
+}
+
+// формирование массива IA
+Grid.prototype.MakeIA = function() {
+    let ia = []
+    ia[0] = 0
+
+    for (let i = 0; i < this.vertices.length; i++)
+        ia[i + 1] = ia[i] + this.edges[i].length
+
+    return ia
+}
+
+// формирование массива JA
+Grid.prototype.MakeJA = function() {
+    let ja = []
+    let index = 0
+
+    for (let i = 0; i < this.vertices.length; i++)
+        for (let j = 0; j < this.edges[i].length; j++)
+            ja[index++] = this.edges[i][j]
+
+    return ja
+}
+
+// формирование списка смежности
+Grid.prototype.MakeList = function() {
+    let list = "<br><b>Список смежности:</b><br>"
+
+    for (let i = 0; i < this.edges.length; i++)
+        list += "<b>" + i + "</b>&rarr;[" + this.edges[i].join(", ") + "]<br>"
+
+    return list
 }
 
 // отрисовка вершины
@@ -263,6 +296,14 @@ Grid.prototype.DrawInfo = function() {
     this.ctx.fillText("K2: " + this.k2, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 3)
 }
 
+Grid.prototype.AddResults = function() {
+    let ia = this.MakeIA()
+    let ja = this.MakeJA()
+    this.result.innerHTML += "<br><b>IA:</b> [" + ia.join(", ") + "]"
+    this.result.innerHTML += "<br><b>JA:</b> [" + ja.join(", ") + "]"
+    this.result.innerHTML += "<br>" + this.MakeList()
+}
+
 // отрисовка
 Grid.prototype.Draw = function() {
     this.MakeVerices()
@@ -272,4 +313,5 @@ Grid.prototype.Draw = function() {
     this.DrawEdges()
     this.DrawVertices()
     this.DrawInfo()
+    this.AddResults()
 }
