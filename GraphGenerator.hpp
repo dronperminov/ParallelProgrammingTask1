@@ -25,11 +25,16 @@ class GraphGenerator {
     void MakeTriangleEdges(int v, LinkInfo *edges);
     void MakeRectangleEdges(int v, LinkInfo *edges);
     LinkInfo* MakeEdges(int n); // формирование рёбер
+
+    int* MakeIA(LinkInfo *edges, int n); // формирование массива IA
+    int* MakeJA(LinkInfo *edges, int n, int edgesCount); // формирование массива JA
+
     void PrintEdges(LinkInfo *edges, int n); // вывод рёбер
+    void PrintArray(int *array, int n, const char *message); // вывод массива
 public:
     GraphGenerator(int nx, int ny, int k1, int k2, bool debug);
 
-    void Generate();
+    void Generate(int &n, int *&ia, int *&ja);
 };
 
 // проверка, что вершина треугольная
@@ -187,6 +192,40 @@ void GraphGenerator::PrintEdges(LinkInfo *edges, int n) {
     }
 }
 
+// вывод массива
+void GraphGenerator::PrintArray(int *array, int n, const char *message) {
+    std::cout << message << ": [ ";
+
+    for (int i = 0; i < n; i++)
+        std::cout << array[i] << " ";
+
+    std::cout << "]" << std::endl;
+}
+
+// формирование массива IA
+int* GraphGenerator::MakeIA(LinkInfo *edges, int n) {
+    int *ia = new int[n + 1];
+
+    ia[0] = 0;
+
+    for (int i = 0; i < n; i++)
+        ia[i + 1] = ia[i] + edges[i].count;
+
+    return ia;
+}
+
+// формирование массива JA
+int* GraphGenerator::MakeJA(LinkInfo *edges, int n, int edgesCount) {
+    int *ja = new int[edgesCount];
+    int index = 0;
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < edges[i].count; j++)
+            ja[index++] = edges[i].vertices[j];
+
+    return ja;
+}
+
 GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug) {
     this->nx = nx;
     this->ny = ny;
@@ -197,10 +236,20 @@ GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug) {
     this->debug = debug;
 }
 
-void GraphGenerator::Generate() {
-    int n = GetVerticesCount(); // получаем количество вершин
+void GraphGenerator::Generate(int &n, int *&ia, int *&ja) {
+    n = GetVerticesCount(); // получаем количество вершин
     LinkInfo *edges = MakeEdges(n); // формируем рёбра
+    ia = MakeIA(edges, n); // заполняем массив IA
+    ja = MakeJA(edges, n, ia[n]); // заполняем массив JA
 
-    if (debug)
+    if (debug) {
+        std::cout << "Edges count: " << ia[n] << std::endl;
         PrintEdges(edges, n); // выводим рёбра
+    }
+
+    std::cout << "N: " << n << std::endl;
+    PrintArray(ia, n + 1, "IA"); // выводим массив IA
+    PrintArray(ja, ia[n], "JA"); // выводим массив JA
+
+    delete[] edges; // освобождаем память
 }

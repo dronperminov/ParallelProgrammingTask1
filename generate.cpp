@@ -21,7 +21,7 @@ void Help() {
 // генерация
 void Generate(int nx, int ny, int k1, int k2, bool debug, int &n, int *&ia, int *&ja) {
     GraphGenerator generator(nx, ny, k1, k2, debug);
-    generator.Generate();
+    generator.Generate(n, ia, ja);
 }
 
 int main(int argc, char **argv) {

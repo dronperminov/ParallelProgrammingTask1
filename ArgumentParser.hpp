@@ -92,7 +92,7 @@ void ArgumentParser::ParseFromArgv(int argc, char **argv) {
 }
 
 ArgumentParser::ArgumentParser(int argc, char **argv) {
-    if (argc < 2 || argc > 6) // если некорректное количество аргументов
+    if (argc < 2 || argc == 4 || argc > 6) // если некорректное количество аргументов
         throw "invalid arguments. Try ./generate --help for usage";
 
     // если запуск вида ./generate path [debug]
