@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grid drawer</title>
+    <style>
+        .num-input { width: 40px; }
+        label { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div>
+        <label>N<sub>x</sub>: <input class="num-input" id="nx-box" type="number" min="0" value="5"></label>
+        <label>N<sub>y</sub>: <input class="num-input" id="ny-box" type="number" min="0" value="4"></label>
+        <label>K<sub>1</sub>: <input class="num-input" id="k1-box" type="number" min="0" value="3"></label>
+        <label>K<sub>2</sub>: <input class="num-input" id="k2-box" type="number" min="0" value="3"></label>
+        <label>Вариант:<select id="variant-box">
+            <option value="B1">B1</option>
+            <option value="B2" selected>B2</option>
+        </select></label>
+        <input type="submit" onclick="Draw()" value="Нарисовать">
+    </div>
+    <canvas id="canvas"></canvas>
+    <div id="result"></div>
+
+    <script src="grid.js"></script>
+    <script>
+        function Draw() {
+            let nx = +document.getElementById("nx-box").value
+            let ny = +document.getElementById("ny-box").value
+            let k1 = +document.getElementById("k1-box").value
+            let k2 = +document.getElementById("k2-box").value
+            let variant = document.getElementById("variant-box").value
+            let result = document.getElementById("result")
+            
+            let canvas = document.getElementById("canvas")
+            let grid = new Grid(canvas, nx, ny, k1, k2, variant, result)
+
+            grid.Draw()
+            grid.DrawInfo()
+        }
+
+        Draw()
+    </script>
+</body>
+</html>
