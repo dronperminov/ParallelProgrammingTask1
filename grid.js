@@ -156,7 +156,7 @@ Grid.prototype.MakeRectangleEdges = function(v) {
         let index2 = y * this.nx + x
         let vertex = this.Index2Vertex(index2)
 
-        if (dx[k] == -1 || dy[k] == 1 && this.IsTriangleVertex(vertex))
+        if ((dx[k] == -1 || dy[k] == 1) && this.IsTriangleVertex(vertex))
             vertex++
 
         this.edges[v].push(vertex)
