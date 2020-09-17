@@ -1,5 +1,5 @@
 COMPILER=g++
-FLAGS=-O3
+FLAGS=-O3 -fopenmp
 NAME=generate
 
 all:

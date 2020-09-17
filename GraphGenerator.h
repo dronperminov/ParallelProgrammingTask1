@@ -1,6 +1,12 @@
 #pragma once
 
 #include <iostream>
+#include <iomanip>
+#include <chrono>
+
+typedef std::chrono::high_resolution_clock Time;
+typedef std::chrono::time_point<Time> TimePoint;
+typedef std::chrono::milliseconds ms;
 
 struct LinkInfo {
     int count; // количество элементов
@@ -28,9 +34,11 @@ class GraphGenerator {
 
     int* MakeIA(LinkInfo *edges, int n); // формирование массива IA
     int* MakeJA(LinkInfo *edges, int n, int edgesCount); // формирование массива JA
+    int GetNotZeroCount(int *array, int n); // получение количества ненулевых элементов
 
     void PrintEdges(LinkInfo *edges, int n); // вывод рёбер
     void PrintArray(int *array, int n, const char *message); // вывод массива
+    void PrintInfo(int n, int *ia, int *ja, const ms &time); // вывод сводной информации
 public:
     GraphGenerator(int nx, int ny, int k1, int k2, bool debug);
 

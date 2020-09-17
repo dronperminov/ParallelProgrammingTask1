@@ -165,6 +165,20 @@ void GraphGenerator::PrintArray(int *array, int n, const char *message) {
     std::cout << "]" << std::endl;
 }
 
+// вывод сводной информации
+void GraphGenerator::PrintInfo(int n, int *ia, int *ja, const ms &time) {
+    std::cout << "Graph generation is end" << std::endl;
+
+    std::cout << "+--------------------+-----------------+" << std::endl;
+    std::cout << "|      Feature       |      Value      |" << std::endl;
+    std::cout << "+--------------------+-----------------+" << std::endl;
+    std::cout << "|           vertices | " << std::setw(15) << n << " |" << std::endl;
+    std::cout << "|              edges | " << std::setw(15) << ia[n] << " |" << std::endl;
+    std::cout << "| portrait non zeros | " << std::setw(15) << GetNotZeroCount(ja, ia[n]) << " |" << std::endl;
+    std::cout << "|   elapsed time, ms | " << std::setw(15) << time.count() << " |" << std::endl;
+    std::cout << "+--------------------+-----------------+" << std::endl;
+}
+
 // формирование массива IA
 int* GraphGenerator::MakeIA(LinkInfo *edges, int n) {
     int *ia = new int[n + 1];
@@ -189,6 +203,17 @@ int* GraphGenerator::MakeJA(LinkInfo *edges, int n, int edgesCount) {
     return ja;
 }
 
+// получение количества ненулевых элементов
+int GraphGenerator::GetNotZeroCount(int *array, int n) {
+    int count = 0;
+
+    for (int i = 0; i < n; i++)
+        if (array[i])
+            count++;
+
+    return count;
+}
+
 GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug) {
     this->nx = nx;
     this->ny = ny;
@@ -200,19 +225,26 @@ GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug) {
 }
 
 void GraphGenerator::Generate(int &n, int *&ia, int *&ja) {
+    TimePoint t0 = Time::now(); // запускаем замер времени
+
     n = GetVerticesCount(); // получаем количество вершин
     LinkInfo *edges = MakeEdges(n); // формируем рёбра
     ia = MakeIA(edges, n); // заполняем массив IA
     ja = MakeJA(edges, n, ia[n]); // заполняем массив JA
 
+    TimePoint t1 = Time::now(); // останавливаем замер времени
+    ms time = std::chrono::duration_cast<ms>(t1 - t0); // вычисляем разницу времени
+
     if (debug) {
         std::cout << "Edges count: " << ia[n] << std::endl;
         PrintEdges(edges, n); // выводим рёбра
+
+        std::cout << "N: " << n << std::endl;
+        PrintArray(ia, n + 1, "IA"); // выводим массив IA
+        PrintArray(ja, ia[n], "JA"); // выводим массив JA
     }
 
-    std::cout << "N: " << n << std::endl;
-    PrintArray(ia, n + 1, "IA"); // выводим массив IA
-    PrintArray(ja, ia[n], "JA"); // выводим массив JA
+    PrintInfo(n, ia, ja, time); // выводим сводную информацию
 
     delete[] edges; // освобождаем память
 }
