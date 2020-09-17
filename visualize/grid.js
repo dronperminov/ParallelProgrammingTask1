@@ -3,15 +3,18 @@ const UP_TRIANGLE_COLOR = '#2196f3'//'#ffbcd4'
 const DOWN_TRIANGLE_COLOR = '#2196f3'//'#2196f3'
 
 const EDGE_COLOR = '#ff5722'
-const EDGE_LINE_WIDTH = 5
+const EDGE_LINE_WIDTH = 3
 
 const MIN_CELL_SIZE = 80
 const MIN_RADIUS = 12
+const MAX_RADIUS = 20
 
+const VARIANT_A1 = 'A1'
+const VARIANT_A2 = 'A2'
 const VARIANT_B1 = 'B1'
 const VARIANT_B2 = 'B2'
 
-function Grid(canvas, nx, ny, k1, k2, variant, result, padding = 5) {
+function Grid(canvas, nx, ny, k1, k2, variant, result) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
 
@@ -22,7 +25,7 @@ function Grid(canvas, nx, ny, k1, k2, variant, result, padding = 5) {
     this.variant = variant
     this.result = result
 
-    this.padding = padding
+    this.padding = variant == VARIANT_A1 || variant == VARIANT_A2 ? 25 : 5
 
     let size = (window.innerWidth < 768 ? window.innerWidth : window.innerWidth / 2)
     this.cellSize = (size - 2 * this.padding) / nx
@@ -30,7 +33,7 @@ function Grid(canvas, nx, ny, k1, k2, variant, result, padding = 5) {
     if (window.innerWidth < 768 && this.cellSize < MIN_CELL_SIZE)
         this.cellSize = MIN_CELL_SIZE
 
-    this.radius = Math.max(this.cellSize / 8, MIN_RADIUS)
+    this.radius = Math.min(Math.max(this.cellSize / 8, MIN_RADIUS), MAX_RADIUS)
 
     canvas.width = this.padding * 2 + this.cellSize * nx
     canvas.height = this.padding * 2 + this.cellSize * ny
@@ -97,6 +100,18 @@ Grid.prototype.Index2Vertex = function(index) {
     return vertex
 }
 
+// формирование вершин для варианта A
+Grid.prototype.MakeVericesVariantA = function() {
+    for (let i = 0; i <= this.ny; i++) {
+        for (let j = 0; j <= this.nx; j++) {
+            let x = this.padding + j * this.cellSize;
+            let y = this.padding + i * this.cellSize;
+
+            this.vertices.push({ x: x, y: y, id: i * (this.nx + 1) + j })
+        }
+    }
+}
+
 // формирование вершин
 Grid.prototype.MakeVerices = function() {
     let index = 0
@@ -111,7 +126,8 @@ Grid.prototype.MakeVerices = function() {
             let x = this.padding + (index % this.nx) * this.cellSize;
             let y = this.padding + Math.floor(index / this.nx) * this.cellSize;
 
-            this.vertices.push({ x: x + this.cellSize / 2, y: y + this.cellSize / 2, id: vertex++ })
+            if (this.variant == VARIANT_B1 || this.variant == VARIANT_B2)
+                this.vertices.push({ x: x + this.cellSize / 2, y: y + this.cellSize / 2, id: vertex++ })
 
             rectangles++
             index++
@@ -125,7 +141,7 @@ Grid.prototype.MakeVerices = function() {
                 this.vertices.push({ x: x + this.cellSize / 3, y: y + this.cellSize / 3, id: vertex++ })
                 this.vertices.push({ x: x + this.cellSize * 2 / 3, y: y + this.cellSize * 2 / 3, id: vertex++ })
             }
-            else {
+            else if (this.variant == VARIANT_B2) {
                 this.vertices.push({ x: x + this.cellSize / 3, y: y + this.cellSize * 2 / 3, id: vertex++ })
                 this.vertices.push({ x: x + this.cellSize * 2 / 3, y: y + this.cellSize / 3, id: vertex++ })
             }
@@ -135,12 +151,15 @@ Grid.prototype.MakeVerices = function() {
         }
     }
 
+    if (this.variant == VARIANT_A1 || this.variant == VARIANT_A2)
+        this.MakeVericesVariantA()
+
     this.result.innerHTML = "<b>Вариант:</b> " + this.variant
     this.result.innerHTML += "<br><b>Размер сетки:</b> " + this.nx + "x" + this.ny
     this.result.innerHTML += "<br><b>Параметры разбиения</b> " + this.k1 + ", " + this.k2
     this.result.innerHTML += "<br><br><b>Прямоугольников:</b> " + rectangles
     this.result.innerHTML += "<br><b>Треугольников:</b> " + triangles
-    this.result.innerHTML += "<br><b>Всего вершин:</b> " + vertex
+    this.result.innerHTML += "<br><b>Всего вершин:</b> " + this.vertices.length
 }
 
 // формирование рёбер для заданной вершины для варианта B1
@@ -196,6 +215,60 @@ Grid.prototype.MakeEdgesForVertexB2 = function(v, x, y) {
     }
 }
 
+// формирование рёбер для заданной вершины для вариантов A
+Grid.prototype.MakeEdgesForVertexA = function(v) {
+    let dx = [ 0, -1, 0, 1, 0 ]
+    let dy = [ -1, 0, 0, 0, 1 ]
+    let vx = v % (this.nx + 1)
+    let vy = Math.floor(v / (this.nx + 1))
+
+    for (let k = 0; k < 5; k++) {
+        let x = vx + dx[k]
+        let y = vy + dy[k]
+
+        if (x < 0 || y < 0 || x > this.nx || y > this.ny)
+            continue
+
+        this.edges[v].push(y * (this.nx + 1) + x)
+    }
+}
+
+// формирование рёбер для заданной вершины для вариантов B
+Grid.prototype.MakeEdgesForVertexB = function(v) {
+    let index = this.Vertex2Index(v)
+    let x = index % this.nx
+    let y = Math.floor(index / this.nx)
+
+    if (this.variant == VARIANT_B1) {
+        this.MakeEdgesForVertexB1(v, x, y)
+    }
+    else if (this.variant == VARIANT_B2) {
+        this.MakeEdgesForVertexB2(v, x, y)
+    }
+}
+
+// добавление диагональных элементов для варианта А
+Grid.prototype.AddDiagonalsForA = function() {
+    for (let index = this.k1; index < this.nx * this.ny; index += this.k1 + this.k2) {
+        for (let k = 0; k < this.k2 && index + k < this.nx * this.ny; k++) {
+            let i = Math.floor((index + k) / this.nx)
+            let j = (index + k) % this.nx
+
+            if (this.variant == VARIANT_A1) {
+                this.edges[i * (this.nx + 1) + j + 1].push((i + 1) * (this.nx + 1) + j)
+                this.edges[(i + 1) * (this.nx + 1) + j].push(i * (this.nx + 1) + j + 1)
+            }
+            else {
+                this.edges[i * (this.nx + 1) + j].push((i + 1) * (this.nx + 1) + j + 1)
+                this.edges[(i + 1) * (this.nx + 1) + j + 1].push(i * (this.nx + 1) + j)
+            }
+        }
+    }
+
+    for (let v = 0; v < this.vertices.length; v++)
+        this.edges[v].sort(function(a, b) { return a - b })
+}
+
 // формирование рбер
 Grid.prototype.MakeEdges = function() {
     this.edges = []
@@ -203,17 +276,16 @@ Grid.prototype.MakeEdges = function() {
     for (let v = 0; v < this.vertices.length; v++) {
         this.edges[v] = []
 
-        let index = this.Vertex2Index(v)
-        let x = index % this.nx
-        let y = Math.floor(index / this.nx)
-
-        if (this.variant == VARIANT_B1) {
-            this.MakeEdgesForVertexB1(v, x, y)
+        if (this.variant == VARIANT_A1 || this.variant == VARIANT_A2) {
+            this.MakeEdgesForVertexA(v)
         }
-        else {
-            this.MakeEdgesForVertexB2(v, x, y)
+        else if (this.variant == VARIANT_B1 || this.variant == VARIANT_B2) {
+            this.MakeEdgesForVertexB(v)
         }
     }
+
+    if (this.variant == VARIANT_A1 || this.variant == VARIANT_A2)
+        this.AddDiagonalsForA()
 }
 
 // формирование массива IA
@@ -291,7 +363,7 @@ Grid.prototype.DrawGrid = function() {
             let x = this.padding + ((index + k) % this.nx) * this.cellSize
             let y = this.padding + Math.floor((index + k) / this.nx) * this.cellSize
 
-            if (this.variant == VARIANT_B1) {
+            if (this.variant == VARIANT_A1 || this.variant == VARIANT_B1) {
                 this.DrawLine(x + this.cellSize, y, x, y + this.cellSize)
             }
             else {
