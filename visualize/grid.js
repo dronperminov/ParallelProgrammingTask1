@@ -41,7 +41,14 @@ Grid.prototype.IsTriangleVertex = function(v) {
 
 // проверка, что треугольная вершина сверху
 Grid.prototype.IsUpVertex = function(v) {
-    return (v % (this.k1 + 2 * this.k2) - this.k1) % 2 == 1
+    let pos = v % (this.k1 + 2 * this.k2)
+    return pos >= this.k1 && (pos - this.k1) & 1
+}
+
+// проверка, что треугольная вершина сверху
+Grid.prototype.IsDownVertex = function(v) {
+    let pos = v % (this.k1 + 2 * this.k2)
+    return pos >= this.k1 && !((pos - this.k1) & 1)
 }
 
 // получение координаты вершины на сетке
@@ -110,59 +117,6 @@ Grid.prototype.MakeVerices = function() {
     this.result.innerHTML += "<br><b>Всего вершин:</b> " + vertex
 }
 
-// формирование рёбер для треугольников
-Grid.prototype.MakeTriangleEdges = function(v) {
-    let index = this.Vertex2Index(v)
-    let vx = index % this.nx
-    let vy = Math.floor(index / this.nx)
-
-    if (vy > 0 && this.IsUpVertex(v))
-        this.edges[v].push(this.Index2Vertex((vy - 1) * this.nx + vx))
-
-    if (vx > 0 || (vx == 0 && this.IsUpVertex(v)))
-        this.edges[v].push(v - 1)
-
-    this.edges[v].push(v)
-
-    if (vx < this.nx - 1 || (vx == this.nx - 1 && !this.IsUpVertex(v)))
-        this.edges[v].push(v + 1)
-
-    if (vy < this.ny - 1 && !this.IsUpVertex(v)) {
-        let vertex = this.Index2Vertex((vy + 1) * this.nx + vx)
-
-        if (this.IsTriangleVertex(vertex))
-            vertex++
-
-        this.edges[v].push(vertex)
-    }
-}
-
-// формирование рёбер для прямоугольников
-Grid.prototype.MakeRectangleEdges = function(v) {
-    let dx = [0, -1, 0, 1, 0]
-    let dy = [-1, 0, 0, 0, 1]
-
-    let index = this.Vertex2Index(v)
-    let vx = index % this.nx
-    let vy = Math.floor(index / this.nx)
-
-    for (let k = 0; k < 5; k++) {
-        let x = vx + dx[k]
-        let y = vy + dy[k]
-
-        if (x < 0 || x >= this.nx || y < 0 || y >= this.ny)
-            continue
-
-        let index2 = y * this.nx + x
-        let vertex = this.Index2Vertex(index2)
-
-        if ((dx[k] == -1 || dy[k] == 1) && this.IsTriangleVertex(vertex))
-            vertex++
-
-        this.edges[v].push(vertex)
-    }
-}
-
 // формирование рбер
 Grid.prototype.MakeEdges = function() {
     this.edges = []
@@ -170,11 +124,32 @@ Grid.prototype.MakeEdges = function() {
     for (let v = 0; v < this.vertices.length; v++) {
         this.edges[v] = []
 
-        if (this.IsTriangleVertex(v)) {
-            this.MakeTriangleEdges(v)
-        }
-        else {
-            this.MakeRectangleEdges(v)
+        let index = this.Vertex2Index(v)
+        let x = index % this.nx
+        let y = Math.floor(index / this.nx)
+
+        // соседняя сверху, если не нижнетреугольная ячейка
+        if (y > 0 && !this.IsDownVertex(v))
+            this.edges[v].push(this.Index2Vertex((y - 1) * this.nx + x))
+
+        // соседняя слева
+        if (x > 0 || (x == 0 && this.IsUpVertex(v)))
+            this.edges[v].push(v - 1)
+
+        this.edges[v].push(v)
+
+        // соседняя справа
+        if (x < this.nx - 1 || (x == this.nx - 1 && this.IsDownVertex(v)))
+            this.edges[v].push(v + 1)
+
+        // соседняя снизу, если не верхнетреугольная ячейка
+        if (y < this.ny - 1 && !this.IsUpVertex(v)) {
+            let vertex = this.Index2Vertex((y + 1) * this.nx + x);
+
+            if (this.IsTriangleVertex(vertex))
+                vertex++;
+
+            this.edges[v].push(vertex)
         }
     }
 }
