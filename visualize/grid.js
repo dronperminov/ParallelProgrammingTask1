@@ -3,9 +3,10 @@ const UP_TRIANGLE_COLOR = '#2196f3'//'#ffbcd4'
 const DOWN_TRIANGLE_COLOR = '#2196f3'//'#2196f3'
 
 const EDGE_COLOR = '#ff5722'
-const EDGE_LINE_WIDTH = 2
+const EDGE_LINE_WIDTH = 5
 
-const MIN_CELL_SIZE = 120
+const MIN_CELL_SIZE = 80
+const MIN_RADIUS = 12
 
 const VARIANT_B1 = 'B1'
 const VARIANT_B2 = 'B2'
@@ -23,11 +24,15 @@ function Grid(canvas, nx, ny, k1, k2, variant, result, padding = 5) {
 
     this.padding = padding
 
-    let size = Math.min(window.innerWidth, window.innerHeight) - 25
-    this.cellSize = Math.max(MIN_CELL_SIZE, (size - 2 * this.padding) / (Math.max(nx, ny)))
-    this.radius = this.cellSize / 8
+    let size = (window.innerWidth < 768 ? window.innerWidth : window.innerWidth / 2)
+    this.cellSize = (size - 2 * this.padding) / nx
 
-    canvas.width = this.padding * 2 + this.cellSize * nx + 100
+    if (window.innerWidth < 768 && this.cellSize < MIN_CELL_SIZE)
+        this.cellSize = MIN_CELL_SIZE
+
+    this.radius = Math.max(this.cellSize / 8, MIN_RADIUS)
+
+    canvas.width = this.padding * 2 + this.cellSize * nx
     canvas.height = this.padding * 2 + this.cellSize * ny
 }
 
@@ -130,7 +135,10 @@ Grid.prototype.MakeVerices = function() {
         }
     }
 
-    this.result.innerHTML = "<b>Прямоугольников:</b> " + rectangles
+    this.result.innerHTML = "<b>Вариант:</b> " + this.variant
+    this.result.innerHTML += "<br><b>Размер сетки:</b> " + this.nx + "x" + this.ny
+    this.result.innerHTML += "<br><b>Параметры разбиения</b> " + this.k1 + ", " + this.k2
+    this.result.innerHTML += "<br><br><b>Прямоугольников:</b> " + rectangles
     this.result.innerHTML += "<br><b>Треугольников:</b> " + triangles
     this.result.innerHTML += "<br><b>Всего вершин:</b> " + vertex
 }
@@ -316,25 +324,10 @@ Grid.prototype.DrawVertices = function() {
         this.DrawVertex(this.vertices[i])
 }
 
-// отрисовка информации
-Grid.prototype.DrawInfo = function() {
-    let fsize = 20
-    this.ctx.fillStyle = '#000'
-    this.ctx.font = fsize + 'px serif'
-    this.ctx.textAlign = 'left'
-    this.ctx.textBaseline = 'top'
-
-    this.ctx.fillText("Nx: " + this.nx, this.padding + this.nx * this.cellSize + 10, this.padding)
-    this.ctx.fillText("Ny: " + this.ny, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 1)
-    this.ctx.fillText("K1: " + this.k1, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 2)
-    this.ctx.fillText("K2: " + this.k2, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 3)
-    this.ctx.fillText("Вар.: " + this.variant, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 4)
-}
-
 Grid.prototype.AddResults = function() {
     let ia = this.MakeIA()
     let ja = this.MakeJA()
-    this.result.innerHTML += "<br><b>IA:</b> [" + ia.join(", ") + "]"
+    this.result.innerHTML += "<br><br><b>IA:</b> [" + ia.join(", ") + "]"
     this.result.innerHTML += "<br><b>JA:</b> [" + ja.join(", ") + "]"
     this.result.innerHTML += "<br>" + this.MakeList()
 }
@@ -347,6 +340,5 @@ Grid.prototype.Draw = function() {
     this.DrawGrid()
     this.DrawEdges()
     this.DrawVertices()
-    this.DrawInfo()
     this.AddResults()
 }

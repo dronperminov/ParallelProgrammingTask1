@@ -2,25 +2,44 @@
 <html>
 <head>
     <title>Grid drawer</title>
+    <meta name="viewport" content="width=device-width" />
+
     <style>
         .num-input { width: 40px; }
         label { margin-right: 10px; }
+        .visualizer { display: table; }
+        .visualizer-controls { display: table-cell; width: 50%; }
+        .visualizer-results { display: table-cell; }
+        .scrollable { overflow-x: auto; }
+
+        @media (max-width:767px) {
+            .visualizer { display: block; }
+            .visualizer-controls { display: block; width: 100%; }
+            .visualizer-results { display: block; }
+        }
     </style>
 </head>
 <body>
-    <div>
-        <label>N<sub>x</sub>: <input class="num-input" id="nx-box" type="number" min="0" value="5"></label>
-        <label>N<sub>y</sub>: <input class="num-input" id="ny-box" type="number" min="0" value="4"></label>
-        <label>K<sub>1</sub>: <input class="num-input" id="k1-box" type="number" min="0" value="3"></label>
-        <label>K<sub>2</sub>: <input class="num-input" id="k2-box" type="number" min="0" value="3"></label>
-        <label>Вариант: <select id="variant-box">
-            <option value="B1">B1</option>
-            <option value="B2" selected>B2</option>
-        </select></label>
-        <input type="submit" onclick="Draw()" value="Нарисовать">
+    <div class="visualizer">
+        <div class="visualizer-controls">
+            <div>
+                <label>N<sub>x</sub>: <input class="num-input" id="nx-box" type="number" min="0" value="5"></label>
+                <label>N<sub>y</sub>: <input class="num-input" id="ny-box" type="number" min="0" value="4"></label>
+                <label>K<sub>1</sub>: <input class="num-input" id="k1-box" type="number" min="0" value="3"></label>
+                <label>K<sub>2</sub>: <input class="num-input" id="k2-box" type="number" min="0" value="3"></label>
+                <label>Вариант: <select id="variant-box">
+                    <option value="B1">B1</option>
+                    <option value="B2" selected>B2</option>
+                </select></label>
+                <input type="submit" onclick="Draw()" value="Нарисовать">
+            </div>
+            <div class="scrollable">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+
+        <div class="visualizer-results" id="result"></div>
     </div>
-    <canvas id="canvas"></canvas>
-    <div id="result"></div>
 
     <script src="grid.js"></script>
     <script>
@@ -36,7 +55,6 @@
             let grid = new Grid(canvas, nx, ny, k1, k2, variant, result)
 
             grid.Draw()
-            grid.DrawInfo()
         }
 
         Draw()
