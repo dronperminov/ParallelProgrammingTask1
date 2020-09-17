@@ -7,7 +7,10 @@ const EDGE_LINE_WIDTH = 2
 
 const MIN_CELL_SIZE = 120
 
-function Grid(canvas, nx, ny, k1, k2, result, padding = 5) {
+const VARIANT_B1 = 'B1'
+const VARIANT_B2 = 'B2'
+
+function Grid(canvas, nx, ny, k1, k2, variant, result, padding = 5) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
 
@@ -15,6 +18,7 @@ function Grid(canvas, nx, ny, k1, k2, result, padding = 5) {
     this.ny = ny
     this.k1 = k1
     this.k2 = k2
+    this.variant = variant
     this.result = result
 
     this.padding = padding
@@ -42,12 +46,20 @@ Grid.prototype.IsTriangleVertex = function(v) {
 // проверка, что треугольная вершина сверху
 Grid.prototype.IsUpVertex = function(v) {
     let pos = v % (this.k1 + 2 * this.k2)
+
+    if (this.variant == VARIANT_B1)
+        return pos >= this.k1 && !((pos - this.k1) & 1)
+
     return pos >= this.k1 && (pos - this.k1) & 1
 }
 
 // проверка, что треугольная вершина сверху
 Grid.prototype.IsDownVertex = function(v) {
     let pos = v % (this.k1 + 2 * this.k2)
+
+    if (this.variant == VARIANT_B1)
+        return pos >= this.k1 && (pos - this.k1) & 1
+
     return pos >= this.k1 && !((pos - this.k1) & 1)
 }
 
@@ -104,8 +116,14 @@ Grid.prototype.MakeVerices = function() {
             let x = this.padding + (index % this.nx) * this.cellSize
             let y = this.padding + Math.floor(index / this.nx) * this.cellSize
 
-            this.vertices.push({ x: x + this.cellSize / 3, y: y + this.cellSize * 2 / 3, id: vertex++ })
-            this.vertices.push({ x: x + this.cellSize * 2 / 3, y: y + this.cellSize / 3, id: vertex++ })
+            if (this.variant == VARIANT_B1) {
+                this.vertices.push({ x: x + this.cellSize / 3, y: y + this.cellSize / 3, id: vertex++ })
+                this.vertices.push({ x: x + this.cellSize * 2 / 3, y: y + this.cellSize * 2 / 3, id: vertex++ })
+            }
+            else {
+                this.vertices.push({ x: x + this.cellSize / 3, y: y + this.cellSize * 2 / 3, id: vertex++ })
+                this.vertices.push({ x: x + this.cellSize * 2 / 3, y: y + this.cellSize / 3, id: vertex++ })
+            }
 
             triangles += 2
             index++
@@ -115,6 +133,59 @@ Grid.prototype.MakeVerices = function() {
     this.result.innerHTML = "<b>Прямоугольников:</b> " + rectangles
     this.result.innerHTML += "<br><b>Треугольников:</b> " + triangles
     this.result.innerHTML += "<br><b>Всего вершин:</b> " + vertex
+}
+
+// формирование рёбер для заданной вершины для варианта B1
+Grid.prototype.MakeEdgesForVertexB1 = function(v, x, y) {
+    if (y > 0 && !this.IsDownVertex(v)) {
+        let vertex = this.Index2Vertex((y - 1) * this.nx + x);
+
+        if (this.IsTriangleVertex(vertex))
+            vertex++;
+
+        this.edges[v].push(vertex)
+    }
+
+    // соседняя слева
+    if (x > 0 || (x == 0 && this.IsDownVertex(v)))
+        this.edges[v].push(v - 1)
+
+    this.edges[v].push(v)
+
+    // соседняя справа
+    if (x < this.nx - 1 || (x == this.nx - 1 && this.IsUpVertex(v)))
+        this.edges[v].push(v + 1)
+
+    // соседняя снизу, если не верхнетреугольная ячейка
+    if (y < this.ny - 1 && !this.IsUpVertex(v))
+        this.edges[v].push(this.Index2Vertex((y + 1) * this.nx + x))
+}
+
+// формирование рёбер для заданной вершины для варианта B2
+Grid.prototype.MakeEdgesForVertexB2 = function(v, x, y) {
+    // соседняя сверху, если не нижнетреугольная ячейка
+    if (y > 0 && !this.IsDownVertex(v))
+        this.edges[v].push(this.Index2Vertex((y - 1) * this.nx + x))
+
+    // соседняя слева
+    if (x > 0 || (x == 0 && this.IsUpVertex(v)))
+        this.edges[v].push(v - 1)
+
+    this.edges[v].push(v)
+
+    // соседняя справа
+    if (x < this.nx - 1 || (x == this.nx - 1 && this.IsDownVertex(v)))
+        this.edges[v].push(v + 1)
+
+    // соседняя снизу, если не верхнетреугольная ячейка
+    if (y < this.ny - 1 && !this.IsUpVertex(v)) {
+        let vertex = this.Index2Vertex((y + 1) * this.nx + x);
+
+        if (this.IsTriangleVertex(vertex))
+            vertex++;
+
+        this.edges[v].push(vertex)
+    }
 }
 
 // формирование рбер
@@ -128,28 +199,11 @@ Grid.prototype.MakeEdges = function() {
         let x = index % this.nx
         let y = Math.floor(index / this.nx)
 
-        // соседняя сверху, если не нижнетреугольная ячейка
-        if (y > 0 && !this.IsDownVertex(v))
-            this.edges[v].push(this.Index2Vertex((y - 1) * this.nx + x))
-
-        // соседняя слева
-        if (x > 0 || (x == 0 && this.IsUpVertex(v)))
-            this.edges[v].push(v - 1)
-
-        this.edges[v].push(v)
-
-        // соседняя справа
-        if (x < this.nx - 1 || (x == this.nx - 1 && this.IsDownVertex(v)))
-            this.edges[v].push(v + 1)
-
-        // соседняя снизу, если не верхнетреугольная ячейка
-        if (y < this.ny - 1 && !this.IsUpVertex(v)) {
-            let vertex = this.Index2Vertex((y + 1) * this.nx + x);
-
-            if (this.IsTriangleVertex(vertex))
-                vertex++;
-
-            this.edges[v].push(vertex)
+        if (this.variant == VARIANT_B1) {
+            this.MakeEdgesForVertexB1(v, x, y)
+        }
+        else {
+            this.MakeEdgesForVertexB2(v, x, y)
         }
     }
 }
@@ -229,7 +283,12 @@ Grid.prototype.DrawGrid = function() {
             let x = this.padding + ((index + k) % this.nx) * this.cellSize
             let y = this.padding + Math.floor((index + k) / this.nx) * this.cellSize
 
-            this.DrawLine(x, y, x + this.cellSize, y + this.cellSize)
+            if (this.variant == VARIANT_B1) {
+                this.DrawLine(x + this.cellSize, y, x, y + this.cellSize)
+            }
+            else {
+                this.DrawLine(x, y, x + this.cellSize, y + this.cellSize)
+            }
         }
     }
 }
@@ -269,6 +328,7 @@ Grid.prototype.DrawInfo = function() {
     this.ctx.fillText("Ny: " + this.ny, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 1)
     this.ctx.fillText("K1: " + this.k1, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 2)
     this.ctx.fillText("K2: " + this.k2, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 3)
+    this.ctx.fillText("Вар.: " + this.variant, this.padding + this.nx * this.cellSize + 10, this.padding + fsize * 4)
 }
 
 Grid.prototype.AddResults = function() {
