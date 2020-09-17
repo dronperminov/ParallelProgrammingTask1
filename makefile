@@ -1,6 +1,10 @@
 COMPILER=g++
 FLAGS=-O3 -fopenmp
-NAME=generate
 
-all:
-	$(COMPILER) $(FLAGS) ArgumentParser.cpp GraphGenerator.cpp generate.cpp -o $(NAME)
+all: generate tests
+
+generate:
+	$(COMPILER) $(FLAGS) ArgumentParser.cpp GraphGenerator.cpp generate.cpp -o generate
+
+tests:
+	$(COMPILER) $(FLAGS) GraphGenerator.cpp tests.cpp -o tests
