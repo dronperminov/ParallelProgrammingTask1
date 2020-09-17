@@ -7,7 +7,14 @@ bool GraphGenerator::IsTriangleVertex(int v) const {
 
 // проверка, что треугольная вершина сверху
 bool GraphGenerator::IsUpVertex(int v) const {
-    return (v % (k1 + 2 * k2) - k1) % 2 == 1;
+    int pos = v % (k1 + 2 * k2);
+    return pos >= k1 && (pos - k1) & 1;
+}
+
+// проверка, что треугольная вершина снизу
+bool GraphGenerator::IsDownVertex(int v) const {
+    int pos = v % (k1 + 2 * k2);
+    return pos >= k1 && !((pos - k1) & 1);
 }
 
 // получение индекса вершины на сетке
@@ -32,10 +39,12 @@ int GraphGenerator::Index2Vertex(int index) const {
     int mod = index % (k1 + k2);
     int vertex = div * (k1 + 2 * k2);
 
-    if (mod < k1)
+    if (mod < k1) {
         vertex += mod;
-    else
+    }
+    else {
         vertex += mod * 2 - k1;
+    }
 
     return vertex;
 }
@@ -70,70 +79,40 @@ int GraphGenerator::GetVerticesCount() const {
     return n;
 }
 
-// формирование рёбер для треугольных вершин
-void GraphGenerator::MakeTriangleEdges(int v, LinkInfo *edges) {
-    int index = Vertex2Index(v);
-    int vx = index % nx;
-    int vy = index / nx;
-
-    if (vy > 0 && IsUpVertex(v))
-        edges[v].vertices[edges[v].count++] = Index2Vertex((vy - 1) * nx + vx);
-
-    if (vx > 0 || (vx == 0 && IsUpVertex(v)))
-        edges[v].vertices[edges[v].count++] = v - 1;
-
-    edges[v].vertices[edges[v].count++] = v;
-
-    if (vx < nx - 1 || (vx == nx - 1 && !IsUpVertex(v)))
-        edges[v].vertices[edges[v].count++] = v + 1;
-
-    if (vy < ny - 1 && !IsUpVertex(v)) {
-        int vertex = Index2Vertex((vy + 1) * nx + vx);
-
-        if (IsTriangleVertex(vertex))
-            vertex++;
-
-        edges[v].vertices[edges[v].count++] = vertex;
-    }
-}
-
-// формирование рёбер для прямоугольных вершин
-void GraphGenerator::MakeRectangleEdges(int v, LinkInfo *edges) {
-    int dx[5] = { 0, -1, 0, 1, 0 };
-    int dy[5] = { -1, 0, 0, 0, 1 };
-
-    int index = Vertex2Index(v);
-    int vx = index % nx;
-    int vy = index / nx;
-
-    for (int k = 0; k < 5; k++) {
-        int x = vx + dx[k];
-        int y = vy + dy[k];
-
-        if (x < 0 || x >= nx || y < 0 || y >= ny)
-            continue;
-
-        int vertex = Index2Vertex(y * nx + x);
-
-        if ((dx[k] == -1 || dy[k] == 1) && IsTriangleVertex(vertex))
-            vertex++;
-
-        edges[v].vertices[edges[v].count++] = vertex;
-    }
-}
-
 // формирование рёбер
-LinkInfo* GraphGenerator::MakeEdges(int n) {
+LinkInfo* GraphGenerator::MakeEdges(int n) const {
     LinkInfo *edges = new LinkInfo[n]; // создаём список смежности
 
+    #pragma omp parallel for
     for (int v = 0; v < n; v++) {
+        int index = Vertex2Index(v);
+        int x = index % nx;
+        int y = index / nx;
+
         edges[v].count = 0;
 
-        if (IsTriangleVertex(v)) {
-            MakeTriangleEdges(v, edges);
-        }
-        else {
-            MakeRectangleEdges(v, edges);
+        // соседняя сверху, если не нижнетреугольная ячейка
+        if (y > 0 && !IsDownVertex(v))
+            edges[v].vertices[edges[v].count++] = Index2Vertex((y - 1) * nx + x);
+
+        // соседняя слева
+        if (x > 0 || (x == 0 && IsUpVertex(v)))
+            edges[v].vertices[edges[v].count++] = v - 1;
+
+        edges[v].vertices[edges[v].count++] = v;
+
+        // соседняя справа
+        if (x < nx - 1 || (x == nx - 1 && IsDownVertex(v)))
+            edges[v].vertices[edges[v].count++] = v + 1;
+
+        // соседняя снизу, если не верхнетреугольная ячейка
+        if (y < ny - 1 && !IsUpVertex(v)) {
+            int vertex = Index2Vertex((y + 1) * nx + x);
+
+            if (IsTriangleVertex(vertex))
+                vertex++;
+
+            edges[v].vertices[edges[v].count++] = vertex;
         }
     }
 
@@ -141,7 +120,7 @@ LinkInfo* GraphGenerator::MakeEdges(int n) {
 }
 
 // вывод рёбер
-void GraphGenerator::PrintEdges(LinkInfo *edges, int n) {
+void GraphGenerator::PrintEdges(LinkInfo *edges, int n) const {
     std::cout << std::endl;
     std::cout << "Edges list: " << std::endl;
 
@@ -156,7 +135,7 @@ void GraphGenerator::PrintEdges(LinkInfo *edges, int n) {
 }
 
 // вывод массива
-void GraphGenerator::PrintArray(int *array, int n, const char *message) {
+void GraphGenerator::PrintArray(int *array, int n, const char *message) const {
     std::cout << message << ": [ ";
 
     for (int i = 0; i < n; i++)
@@ -166,7 +145,7 @@ void GraphGenerator::PrintArray(int *array, int n, const char *message) {
 }
 
 // вывод сводной информации
-void GraphGenerator::PrintInfo(int n, int *ia, int *ja, const ms &time) {
+void GraphGenerator::PrintInfo(int n, int *ia, int *ja, const ms &time) const {
     std::cout << "Graph generation is end" << std::endl;
 
     std::cout << "+--------------------+-----------------+" << std::endl;
@@ -180,7 +159,7 @@ void GraphGenerator::PrintInfo(int n, int *ia, int *ja, const ms &time) {
 }
 
 // формирование массива IA
-int* GraphGenerator::MakeIA(LinkInfo *edges, int n) {
+int* GraphGenerator::MakeIA(LinkInfo *edges, int n) const {
     int *ia = new int[n + 1];
 
     ia[0] = 0;
@@ -192,7 +171,7 @@ int* GraphGenerator::MakeIA(LinkInfo *edges, int n) {
 }
 
 // формирование массива JA
-int* GraphGenerator::MakeJA(LinkInfo *edges, int n, int edgesCount) {
+int* GraphGenerator::MakeJA(LinkInfo *edges, int n, int edgesCount) const {
     int *ja = new int[edgesCount];
     int index = 0;
 
@@ -204,7 +183,7 @@ int* GraphGenerator::MakeJA(LinkInfo *edges, int n, int edgesCount) {
 }
 
 // получение количества ненулевых элементов
-int GraphGenerator::GetNotZeroCount(int *array, int n) {
+int GraphGenerator::GetNotZeroCount(int *array, int n) const {
     int count = 0;
 
     for (int i = 0; i < n; i++)
@@ -224,7 +203,7 @@ GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug) {
     this->debug = debug;
 }
 
-void GraphGenerator::Generate(int &n, int *&ia, int *&ja) {
+void GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
     TimePoint t0 = Time::now(); // запускаем замер времени
 
     n = GetVerticesCount(); // получаем количество вершин
@@ -244,7 +223,9 @@ void GraphGenerator::Generate(int &n, int *&ia, int *&ja) {
         PrintArray(ja, ia[n], "JA"); // выводим массив JA
     }
 
-    PrintInfo(n, ia, ja, time); // выводим сводную информацию
+    if (showInfo) {
+        PrintInfo(n, ia, ja, time); // выводим сводную информацию
+    }
 
     delete[] edges; // освобождаем память
 }
