@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
-#include "ArgumentParser.hpp"
-#include "GraphGenerator.hpp"
+#include "ArgumentParser.h"
+#include "GraphGenerator.h"
 
 using namespace std;
 
