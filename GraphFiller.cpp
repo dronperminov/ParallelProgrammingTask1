@@ -24,7 +24,7 @@ void GraphFiller::PrintDebug(double *a, double *b) const {
 }
 
 // заполнение
-void GraphFiller::Fill(double *&a, double *&b) const {
+void GraphFiller::Fill(double *&a, double *&b, bool showInfo) const {
     TimePoint t0 = Time::now(); // запускаем замер времени
 
     a = new double[ia[n]];
@@ -54,11 +54,15 @@ void GraphFiller::Fill(double *&a, double *&b) const {
     TimePoint t1 = Time::now(); // останавливаем замер времени
     ms time = std::chrono::duration_cast<ms>(t1 - t0); // вычисляем разницу времени
 
-    std::cout << std::endl << "Graph filling is end" << std::endl;
+    if (showInfo) {
+        std::cout << std::endl << "Graph filling is end" << std::endl;
+    }
     
     if (debug) {
         PrintDebug(a, b);
     }
 
-    std::cout << "Elapsed time: " << time.count() << "ms" << std::endl;
+    if (showInfo) {
+        std::cout << "Elapsed time: " << time.count() << "ms" << std::endl;
+    }
 }

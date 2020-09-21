@@ -18,5 +18,5 @@ class GraphFiller {
 public:
     GraphFiller(int n, int *ia, int *ja, int threads, bool debug);
 
-    void Fill(double *&a, double *&b) const; // заполнение
+    void Fill(double *&a, double *&b, bool showInfo = true) const; // заполнение
 };

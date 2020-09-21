@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include "GraphGenerator.h"
+#include "GraphFiller.h"
 
 void TestGenerator(int nx, int ny, int k1, int k2, int expectedN, int expectedEdges, int *expectedIA, int *expectedJA) {
     int n;
@@ -62,6 +63,74 @@ void GeneratorTests() {
     TestGenerator(7, 5, 11, 13, 48, 190, ia8, ja8);
 }
 
+void TestFiller(int n, int *ia, int *ja, double *expectedA, double eps = 1e-15) {
+    double *a;
+    double *b;
+
+    std::cout << "Fill test for n = " << n << ": ";
+    GraphFiller filler(n, ia, ja, 32, false);
+    filler.Fill(a, b, false);
+
+    for (int i = 0; i < ia[n]; i++)
+        assert(fabs(a[i] - expectedA[i]) < eps);
+
+    for (int i = 0; i < n; i++)
+        assert(fabs(b[i] - sin(i)) < eps);
+
+    std::cout << "OK" << std::endl;
+}
+
+void FillerTests() {
+    int ia1[] = { 0, 2, 4, 7 };
+    int ja1[] = { 0, 2, 1, 2, 0, 1, 2 };
+
+    double a1[] = {
+        fabs(cos(2)) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(2),
+        fabs(cos(5)) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(5),
+        cos(2), cos(5), (fabs(cos(2)) + fabs(cos(5))) * DIAGONAL_DOMINANCE_COEFFICIENT
+    };
+
+    int ia2[] = { 0, 2, 4, 7, 11, 13 };
+    int ja2[] = { 0, 2, 1, 3, 0, 2, 3, 1, 2, 3, 4, 3, 4 };
+
+    double a2[] = {
+        fabs(cos(2)) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(2),
+        fabs(cos(7)) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(7),
+        cos(2), (fabs(cos(2)) + fabs(cos(11))) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(11),
+        cos(7), cos(11), (fabs(cos(7)) + fabs(cos(11)) + fabs(cos(19))) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(19),
+        cos(19), fabs(cos(19)) * DIAGONAL_DOMINANCE_COEFFICIENT
+    };
+
+    const int n = 27;
+    int ia3[n + 1];
+    int ja3[n*n];
+    double a3[n*n];
+
+    ia3[0] = 0;
+
+    for (int i = 0; i < n; i++) {
+        ia3[i + 1] = ia3[i] + n;
+        double sum = 0;
+
+        for (int j = 0; j < n; j++) {
+            ja3[i * n + j] = j;
+
+            if (i != j) {
+                a3[i * n + j] = cos(i*j + i + j);
+                sum += fabs(a3[i * n + j]);
+            }
+        }
+
+        a3[i * n + i] = sum * DIAGONAL_DOMINANCE_COEFFICIENT;
+    }
+
+    std::cout << std::endl;
+    TestFiller(3, ia1, ja1, a1);
+    TestFiller(5, ia2, ja2, a2);
+    TestFiller(n, ia3, ja3, a3);
+}
+
 int main() {
     GeneratorTests();
+    FillerTests();
 }

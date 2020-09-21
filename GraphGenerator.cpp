@@ -213,7 +213,9 @@ void GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
     TimePoint t1 = Time::now(); // останавливаем замер времени
     ms time = std::chrono::duration_cast<ms>(t1 - t0); // вычисляем разницу времени
 
-    std::cout << "Graph generation is end" << std::endl;
+    if (showInfo) {
+        std::cout << "Graph generation is end" << std::endl;
+    }
 
     if (debug) {
         std::cout << "Edges count: " << ia[n] << std::endl;
