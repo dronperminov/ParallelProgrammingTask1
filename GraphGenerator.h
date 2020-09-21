@@ -32,7 +32,7 @@ class GraphGenerator {
 
     LinkInfo* MakeEdges(int n) const; // формирование рёбер
     int* MakeIA(LinkInfo *edges, int n) const; // формирование массива IA
-    int* MakeJA(LinkInfo *edges, int n, int edgesCount) const; // формирование массива JA
+    int* MakeJA(LinkInfo *edges, int n, int *ia) const; // формирование массива JA
     int GetNotZeroCount(int *array, int n) const; // получение количества ненулевых элементов
 
     void PrintEdges(LinkInfo *edges, int n) const; // вывод рёбер

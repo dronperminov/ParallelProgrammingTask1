@@ -171,13 +171,13 @@ int* GraphGenerator::MakeIA(LinkInfo *edges, int n) const {
 }
 
 // формирование массива JA
-int* GraphGenerator::MakeJA(LinkInfo *edges, int n, int edgesCount) const {
-    int *ja = new int[edgesCount];
-    int index = 0;
+int* GraphGenerator::MakeJA(LinkInfo *edges, int n, int *ia) const {
+    int *ja = new int[ia[n]];
 
+    #pragma omp parallel for num_threads(threads)
     for (int i = 0; i < n; i++)
         for (int j = 0; j < edges[i].count; j++)
-            ja[index++] = edges[i].vertices[j];
+            ja[ia[i] + j] = edges[i].vertices[j];
 
     return ja;
 }
@@ -210,7 +210,7 @@ void GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
     n = GetVerticesCount(); // получаем количество вершин
     LinkInfo *edges = MakeEdges(n); // формируем рёбра
     ia = MakeIA(edges, n); // заполняем массив IA
-    ja = MakeJA(edges, n, ia[n]); // заполняем массив JA
+    ja = MakeJA(edges, n, ia); // заполняем массив JA
 
     TimePoint t1 = Time::now(); // останавливаем замер времени
     ms time = std::chrono::duration_cast<ms>(t1 - t0); // вычисляем разницу времени
