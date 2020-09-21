@@ -8,19 +8,20 @@ using namespace std;
 
 // вывод информационного сообщения
 void Help() {
-    cout << "Usage: ./generate path [debug] or ./generate Nx Ny k1 k2 [debug]" << endl;
+    cout << "Usage: ./generate path [debug] or ./generate Nx Ny k1 k2 T [debug]" << endl;
     cout << "Args description:" << endl;
     cout << "path  - path to file for read for args" << endl;
     cout << "Nx    - number of columns in grid (natural)" << endl;
     cout << "Ny    - number of rows in grid (natural)" << endl;
-    cout << "k1    - number of non divisible cells (natural)" << endl;
-    cout << "k2    - number of divisible cells (natural)" << endl;
+    cout << "k1    - number of non divisible cells (integer >= 0)" << endl;
+    cout << "k2    - number of divisible cells (integer >= 0)" << endl;
+    cout << "T     - number of threads (natural)" << endl;
     cout << "debug - need print debug info or not (y/n)" << endl;
 }
 
 // генерация
-void Generate(int nx, int ny, int k1, int k2, bool debug, int &n, int *&ia, int *&ja) {
-    GraphGenerator generator(nx, ny, k1, k2, debug);
+void Generate(int nx, int ny, int k1, int k2, int threads, bool debug, int &n, int *&ia, int *&ja) {
+    GraphGenerator generator(nx, ny, k1, k2, threads, debug);
     generator.Generate(n, ia, ja);
 }
 
@@ -42,6 +43,7 @@ int main(int argc, char **argv) {
         int ny = parser.GetNy();
         int k1 = parser.GetK1();
         int k2 = parser.GetK2();
+        int threads = parser.GetThreads();
         bool debug = parser.GetDebug();
 
         // выходные аргументы
@@ -49,7 +51,7 @@ int main(int argc, char **argv) {
         int *ia = NULL;
         int *ja = NULL;
 
-        Generate(nx, ny, k1, k2, debug, n, ia, ja); // запускаем генерацию
+        Generate(nx, ny, k1, k2, threads, debug, n, ia, ja); // запускаем генерацию
     }
     catch (const char *error) {
         cout << "Error: " << error << endl;

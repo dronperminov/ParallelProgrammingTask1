@@ -9,6 +9,7 @@ class ArgumentParser {
     int ny; // количество строк сетки
     int k1; // количество клеток без деления
     int k2; // количество клеток с делением
+    int threads; // количество потоков
     bool debug; // нужна ли отладка
 
     bool IsInteger(const char *s) const; // проверка, что строка является целым числом
@@ -24,6 +25,7 @@ public:
     int GetNy() const;
     int GetK1() const;
     int GetK2() const;
+    int GetThreads() const;
     bool GetDebug() const;
 
     void PrintArguments() const; // вывод аргументов

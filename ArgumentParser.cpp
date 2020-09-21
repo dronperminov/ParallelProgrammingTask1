@@ -24,7 +24,8 @@ void ArgumentParser::ParseFromFile(const char *path) {
     if (!f) // печаль, если файл не открылся
         throw "unable to open input file";
 
-    f >> nx >> ny >> k1 >> k2;
+    if (!(f >> nx >> ny >> k1 >> k2 >> threads))
+        throw "unable to read from file";
 
     if (nx < 1)
         throw "Nx parameter in file is invalid";
@@ -32,11 +33,14 @@ void ArgumentParser::ParseFromFile(const char *path) {
     if (ny < 1)
         throw "Ny parameter in file is invalid";
 
-    if (k1 < 1)
+    if (k1 < 0)
         throw "k1 parameter in file is invalid";
 
-    if (k2 < 1)
+    if (k2 < 0)
         throw "k2 parameter in file is invalid";
+
+    if (k1 + k2 == 0)
+        throw "k1 and k2 == 0";
 
     f.close(); // закрываем файл
 }
@@ -55,15 +59,28 @@ void ArgumentParser::ParseFromArgv(int argc, char **argv) {
     if (!IsInteger(argv[4]))
         throw "k2 parameter is not integer";
 
+    if (!IsInteger(argv[5]))
+        throw "threads parameter is not integer";
+
     // парсим в настоящие аргументы
     nx = atoi(argv[1]);
     ny = atoi(argv[2]);
     k1 = atoi(argv[3]);
     k2 = atoi(argv[4]);
+    threads = atoi(argv[5]);
+
+    if (nx == 0 || ny == 0)
+        throw "invalid value of Nx or Ny ";
+
+    if (k1 + k2 == 0)
+        throw "k1 and k2 == 0";
+
+    if (threads == 0)
+        throw "threads is zero";
 }
 
 ArgumentParser::ArgumentParser(int argc, char **argv) {
-    if (argc < 2 || argc == 4 || argc > 6) // если некорректное количество аргументов
+    if (argc < 2 || argc == 4 || argc == 5 || argc > 7) // если некорректное количество аргументов
         throw "invalid arguments. Try ./generate --help for usage";
 
     // если запуск вида ./generate path [debug]
@@ -77,8 +94,8 @@ ArgumentParser::ArgumentParser(int argc, char **argv) {
     if (argc == 3) {
         ParseDebug(argv[2]);
     }
-    else if (argc == 6) {
-        ParseDebug(argv[5]);
+    else if (argc == 7) {
+        ParseDebug(argv[6]);
     }
     else {
         debug = false;
@@ -101,6 +118,10 @@ int ArgumentParser::GetK2() const {
     return k2;
 }
 
+int ArgumentParser::GetThreads() const {
+    return threads;
+}
+
 bool ArgumentParser::GetDebug() const {
     return debug;
 }
@@ -112,4 +133,5 @@ void ArgumentParser::PrintArguments() const {
     std::cout << "Ny: " << ny << std::endl;
     std::cout << "k1: " << k1 << std::endl;
     std::cout << "k2: " << k2 << std::endl;
+    std::cout << " T: " << threads << std::endl;
 }
