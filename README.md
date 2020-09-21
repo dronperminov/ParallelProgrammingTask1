@@ -4,10 +4,10 @@
 ### Вариант B2
 
 ## Сборка
-Сборка осуществляется с помощью make файла, так что достаточно выполнить в терминале команду `make`. При этом на Вашей системе должен быть установлен компилятор языка C++.
+Сборка осуществляется с помощью make файла, так что достаточно выполнить в терминале команду `make main`. При этом на Вашей системе должен быть установлен компилятор языка C++.
 
 ## Запуск
-Приложение использует обработку аргументов командной строки. Для работы допускается два варианта запуска: `./generate path [debug]` и `./generate Nx Ny k1 k2 T [debug]`
+Приложение использует обработку аргументов командной строки. Для работы допускается два варианта запуска: `./main path [debug]` и `./main Nx Ny k1 k2 T [debug]`
 В первом случае аргументы Nx, Ny, k1, k2 и T будут считаны из файла, находящегося по пути `path`.
 
 ### Аргументы
@@ -94,6 +94,25 @@ v: A b
 8: 0.283662     0.288088     0.0044257     = 0.989358
 9: 0.540302     0.288088     0.0044257     = 0.412118
 Elapsed time: 0ms
+```
+
+## Тесты
+Для сборки самопроверки выполните команду `make tests && ./tests`. Если всё корректно, в консоли должен быть следующий вывод
+```bash
+>make tests && ./tests
+Generator test for (1x1 for k = 0 and 1): OK
+Generator test for (2x1 for k = 1 and 0): OK
+Generator test for (2x1 for k = 1 and 1): OK
+Generator test for (3x2 for k = 1 and 2): OK
+Generator test for (5x2 for k = 2 and 1): OK
+Generator test for (4x3 for k = 3 and 2): OK
+Generator test for (3x4 for k = 1 and 0): OK
+Generator test for (3x4 for k = 0 and 1): OK
+Generator test for (7x5 for k = 11 and 13): OK
+
+Fill test for n = 3: OK
+Fill test for n = 5: OK
+Fill test for n = 27: OK
 ```
 
 ## Визуализатор
