@@ -75,7 +75,7 @@ void TestFiller(int n, int *ia, int *ja, double *expectedA, double eps = 1e-15) 
         assert(fabs(a[i] - expectedA[i]) < eps);
 
     for (int i = 0; i < n; i++)
-        assert(fabs(b[i] - sin(i)) < eps);
+        assert(fabs(b[i] - Fb(i)) < eps);
 
     std::cout << "OK" << std::endl;
 }
@@ -85,20 +85,20 @@ void FillerTests() {
     int ja1[] = { 0, 2, 1, 2, 0, 1, 2 };
 
     double a1[] = {
-        fabs(cos(2)) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(2),
-        fabs(cos(5)) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(5),
-        cos(2), cos(5), (fabs(cos(2)) + fabs(cos(5))) * DIAGONAL_DOMINANCE_COEFFICIENT
+        fabs(Fa(0, 2)) * DIAGONAL_DOMINANCE_COEFFICIENT, Fa(0, 2),
+        fabs(Fa(1, 2)) * DIAGONAL_DOMINANCE_COEFFICIENT, Fa(1, 2),
+        Fa(2, 0), Fa(2, 1), (fabs(Fa(2, 0)) + fabs(Fa(2, 1))) * DIAGONAL_DOMINANCE_COEFFICIENT
     };
 
     int ia2[] = { 0, 2, 4, 7, 11, 13 };
     int ja2[] = { 0, 2, 1, 3, 0, 2, 3, 1, 2, 3, 4, 3, 4 };
 
     double a2[] = {
-        fabs(cos(2)) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(2),
-        fabs(cos(7)) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(7),
-        cos(2), (fabs(cos(2)) + fabs(cos(11))) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(11),
-        cos(7), cos(11), (fabs(cos(7)) + fabs(cos(11)) + fabs(cos(19))) * DIAGONAL_DOMINANCE_COEFFICIENT, cos(19),
-        cos(19), fabs(cos(19)) * DIAGONAL_DOMINANCE_COEFFICIENT
+        fabs(Fa(0, 2)) * DIAGONAL_DOMINANCE_COEFFICIENT, Fa(0, 2),
+        fabs(Fa(1, 3)) * DIAGONAL_DOMINANCE_COEFFICIENT, Fa(1, 3),
+        Fa(2, 0), (fabs(Fa(2, 0)) + fabs(Fa(2, 3))) * DIAGONAL_DOMINANCE_COEFFICIENT, Fa(2, 3),
+        Fa(3, 1), Fa(3, 2), (fabs(Fa(3, 1)) + fabs(Fa(3, 2)) + fabs(Fa(3, 4))) * DIAGONAL_DOMINANCE_COEFFICIENT, Fa(3, 4),
+        Fa(4, 3), fabs(Fa(4, 3)) * DIAGONAL_DOMINANCE_COEFFICIENT
     };
 
     const int n = 27;
@@ -116,7 +116,7 @@ void FillerTests() {
             ja3[i * n + j] = j;
 
             if (i != j) {
-                a3[i * n + j] = cos(i*j + i + j);
+                a3[i * n + j] = Fa(i, j);
                 sum += fabs(a3[i * n + j]);
             }
         }

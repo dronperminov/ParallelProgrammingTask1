@@ -7,6 +7,16 @@
 
 const int DIAGONAL_DOMINANCE_COEFFICIENT = 1.234; // коэффициент диагонального преобладания
 
+// заполняющая функция для Aij
+inline double Fa(int i, int j) {
+    return cos(i*j + i + j);
+}
+
+// заполняющая функция для bi
+inline double Fb(int i) {
+    return sin(i);
+}
+
 class GraphFiller {
     int n; // количество вершин
     int *ia;

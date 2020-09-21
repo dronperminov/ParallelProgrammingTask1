@@ -39,7 +39,7 @@ void GraphFiller::Fill(double *&a, double *&b, bool showInfo) const {
             int j = ja[index];
 
             if (i != j) {
-                a[index] = cos(i*j + i + j); // a_ij
+                a[index] = Fa(i, j); // a_ij
                 sum += fabs(a[index]); // наразиваем сумму внедиагональных элементов
             }
             else {
@@ -48,7 +48,7 @@ void GraphFiller::Fill(double *&a, double *&b, bool showInfo) const {
         }
 
         a[diagIndex] = DIAGONAL_DOMINANCE_COEFFICIENT * sum;
-        b[i] = sin(i);
+        b[i] = Fb(i);
     }
 
     TimePoint t1 = Time::now(); // останавливаем замер времени
