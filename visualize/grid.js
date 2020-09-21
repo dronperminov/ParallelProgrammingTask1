@@ -321,6 +321,61 @@ Grid.prototype.MakeList = function() {
     return list
 }
 
+Grid.prototype.Round = function(x) {
+    return Math.round(x * 100000) / 100000
+}
+
+Grid.prototype.MakeFill = function(ia, ja, a, b) {
+    let html = "<br><b>Коэффициенты матрицы и правой части</b><br>"
+
+    for (let i = 0; i < ia.length - 1; i++) {
+        let row = []
+
+        for (let j = ia[i]; j < ia[i + 1]; j++)
+            row.push(this.Round(a[j]))
+
+        html += i + "&rarr;[" + row.join(", ") + "] = " + this.Round(b[i]) + "<br>"
+    }
+
+    return html
+}
+
+Grid.prototype.Fa = function(i, j) {
+    return Math.cos(i*j + i + j)
+}
+
+Grid.prototype.Fb = function(i) {
+    return Math.sin(i)
+}
+
+// заполнение массисво
+Grid.prototype.Fill = function(ia, ja) {
+    let a = []
+    let b = []
+
+    for (let i = 0; i < ia.length; i++) {
+        let sum = 0
+        let diagIndex = -1;
+
+        for (let index = ia[i]; index < ia[i + 1]; index++) {
+            let j = ja[index]
+
+            if (i != j) {
+                a[index] = this.Fa(i, j) // a_ij
+                sum += Math.abs(a[index]) // наразиваем сумму внедиагональных элементов
+            }
+            else {
+                diagIndex = index;
+            }
+        }
+
+        a[diagIndex] = 1.234 * sum
+        b[i] = this.Fb(i)
+    }
+
+    return { a: a, b: b }
+}
+
 // отрисовка вершины
 Grid.prototype.DrawVertex = function(vertex) {
     this.ctx.strokeStyle = EDGE_COLOR
@@ -399,9 +454,12 @@ Grid.prototype.DrawVertices = function() {
 Grid.prototype.AddResults = function() {
     let ia = this.MakeIA()
     let ja = this.MakeJA()
+    let filled = this.Fill(ia, ja)
+
     this.result.innerHTML += "<br><br><b>IA:</b> [" + ia.join(", ") + "]"
     this.result.innerHTML += "<br><b>JA:</b> [" + ja.join(", ") + "]"
-    this.result.innerHTML += "<br>" + this.MakeList()
+    this.result.innerHTML += "<br>" + this.MakeFill(ia, ja, filled.a, filled.b)
+    this.result.innerHTML += this.MakeList()
 }
 
 // отрисовка
