@@ -20,6 +20,36 @@ void Help() {
     cout << "debug - need print debug info or not (y/n)" << endl;
 }
 
+void Solve(const ArgumentParser& parser) {
+    // входные аргументы
+    int nx = parser.GetNx();
+    int ny = parser.GetNy();
+    int k1 = parser.GetK1();
+    int k2 = parser.GetK2();
+    int threads = parser.GetThreads();
+    bool debug = parser.GetDebug();
+
+    // выходные аргументы
+    int n = 0;
+    int *ia = NULL;
+    int *ja = NULL;
+
+    GraphGenerator generator(nx, ny, k1, k2, threads, debug);
+    generator.Generate(n, ia, ja); // запускаем генерацию
+
+    double *a = NULL;
+    double *b = NULL;
+
+    GraphFiller filler(n, ia, ja, threads, debug);
+    filler.Fill(a, b); // заполняем массив
+
+    // освобождаем выделенную память
+    delete[] ia;
+    delete[] ja;
+    delete[] a;
+    delete[] b;
+}
+
 int main(int argc, char **argv) {
     // если аргументов нет или запустили вызов сообщения
     if (argc == 1 || (argc == 2 && !strcmp(argv[1], "--help"))) {
@@ -33,27 +63,7 @@ int main(int argc, char **argv) {
         if (parser.GetDebug())
             parser.PrintArguments();
 
-        // входные аргументы
-        int nx = parser.GetNx();
-        int ny = parser.GetNy();
-        int k1 = parser.GetK1();
-        int k2 = parser.GetK2();
-        int threads = parser.GetThreads();
-        bool debug = parser.GetDebug();
-
-        // выходные аргументы
-        int n = 0;
-        int *ia = NULL;
-        int *ja = NULL;
-
-        GraphGenerator generator(nx, ny, k1, k2, threads, debug);
-        generator.Generate(n, ia, ja); // запускаем генерацию
-
-        double *a = NULL;
-        double *b = NULL;
-
-        GraphFiller filler(n, ia, ja, threads, debug);
-        filler.Fill(a, b);
+        Solve(parser);
     }
     catch (const char *error) {
         cout << "Error: " << error << endl;
