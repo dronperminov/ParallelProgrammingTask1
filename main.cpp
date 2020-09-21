@@ -3,6 +3,7 @@
 #include <cstring>
 #include "ArgumentParser.h"
 #include "GraphGenerator.h"
+#include "GraphFiller.h"
 
 using namespace std;
 
@@ -17,12 +18,6 @@ void Help() {
     cout << "k2    - number of divisible cells (integer >= 0)" << endl;
     cout << "T     - number of threads (natural)" << endl;
     cout << "debug - need print debug info or not (y/n)" << endl;
-}
-
-// генерация
-void Generate(int nx, int ny, int k1, int k2, int threads, bool debug, int &n, int *&ia, int *&ja) {
-    GraphGenerator generator(nx, ny, k1, k2, threads, debug);
-    generator.Generate(n, ia, ja);
 }
 
 int main(int argc, char **argv) {
@@ -51,7 +46,14 @@ int main(int argc, char **argv) {
         int *ia = NULL;
         int *ja = NULL;
 
-        Generate(nx, ny, k1, k2, threads, debug, n, ia, ja); // запускаем генерацию
+        GraphGenerator generator(nx, ny, k1, k2, threads, debug);
+        generator.Generate(n, ia, ja); // запускаем генерацию
+
+        double *a = NULL;
+        double *b = NULL;
+
+        GraphFiller filler(n, ia, ja, threads, debug);
+        filler.Fill(a, b);
     }
     catch (const char *error) {
         cout << "Error: " << error << endl;

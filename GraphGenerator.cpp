@@ -146,8 +146,6 @@ void GraphGenerator::PrintArray(int *array, int n, const char *message) const {
 
 // вывод сводной информации
 void GraphGenerator::PrintInfo(int n, int *ia, int *ja, const ms &time) const {
-    std::cout << "Graph generation is end" << std::endl;
-
     std::cout << "+--------------------+-----------------+" << std::endl;
     std::cout << "|      Feature       |      Value      |" << std::endl;
     std::cout << "+--------------------+-----------------+" << std::endl;
@@ -214,6 +212,8 @@ void GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
 
     TimePoint t1 = Time::now(); // останавливаем замер времени
     ms time = std::chrono::duration_cast<ms>(t1 - t0); // вычисляем разницу времени
+
+    std::cout << "Graph generation is end" << std::endl;
 
     if (debug) {
         std::cout << "Edges count: " << ia[n] << std::endl;
