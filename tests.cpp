@@ -139,13 +139,11 @@ void TestDot(double *x, double *y, int n, double expectedDot, double eps = 1e-15
 
 void TestLinearCombination(double *x, double *y, double a, double b, int n, double *expectedVector, double eps = 1e-15) {
     std::cout << "Linear combination test for n = " << n << " and a = " << a << ", b = " << b << ": ";
-    double *result = new double[n];
-    LinearCombination(a, x, b, y, result, n, 32);
+    LinearCombination(a, x, b, y, n, 32);
 
     for (int i = 0; i < n; i++)
-        assert(fabs(result[i] - expectedVector[i]) < eps);
+        assert(fabs(x[i] - expectedVector[i]) < eps);
 
-    delete[] result;
     std::cout << "OK" << std::endl;
 }
 

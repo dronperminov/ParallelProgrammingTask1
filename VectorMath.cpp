@@ -14,10 +14,10 @@ double Dot(double *x, double *y, int n, int threads) {
 }
 
 // линейная комбинация x = ax + by
-void LinearCombination(double a, double *x, double b, double *y, double *result, int n, int threads) {
+void LinearCombination(double a, double *x, double b, double *y, int n, int threads) {
     #pragma omp parallel for num_threads(threads)
     for (int i = 0; i < n; i++) {
-        result[i] = x[i] * a + y[i] * b;
+        x[i] = x[i] * a + y[i] * b;
     }
 }
 
