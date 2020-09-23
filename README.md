@@ -61,7 +61,7 @@
 
 ## Примеры запуска
 ```bash
->./main 3 2 1 2
+>./main 3 2 1 2 1
 Graph generation is end
 +--------------------+-----------------+
 |      Feature       |      Value      |

@@ -1,5 +1,5 @@
 COMPILER=g++
-FLAGS=-O3 -fopenmp
+FLAGS=-O3 -fopenmp -pedantic -Wall
 
 all: main tests
 

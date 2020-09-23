@@ -14,11 +14,11 @@ class ArgumentParser {
 
     bool IsInteger(const char *s) const; // проверка, что строка является целым числом
 
-    void ParseDebug(char *arg); // парсинг отладки
-    void ParseFromFile(const char *path); // парсинг из файла
-    void ParseFromArgv(int argc, char **argv); // парсинг из аргументов
+    bool ParseDebug(char *arg); // парсинг отладки
+    bool ParseFromFile(const char *path); // парсинг из файла
+    bool ParseFromArgv(int argc, char **argv); // парсинг из аргументов
 public:
-    ArgumentParser(int argc, char **argv);
+    bool ParseArgs(int argc, char **argv);
 
     // получение аргументов
     int GetNx() const;

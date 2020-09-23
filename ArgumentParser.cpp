@@ -10,57 +10,92 @@ bool ArgumentParser::IsInteger(const char *s) const {
 }
 
 // парсинг отладки
-void ArgumentParser::ParseDebug(char *arg) {
-    if (strcmp(arg, "y") && strcmp(arg, "n"))
-        throw "debug parameter is invalid";
+bool ArgumentParser::ParseDebug(char *arg) {
+    if (strcmp(arg, "y") && strcmp(arg, "n")) {
+        std::cout << "Error: debug parameter is invalid" << std::endl;
+        return false;
+    }
 
     debug = !strcmp(arg, "y");
+    return true;
 }
 
 // парсинг из файла
-void ArgumentParser::ParseFromFile(const char *path) {
+bool ArgumentParser::ParseFromFile(const char *path) {
     std::ifstream f(path); // открываем файл на чтение
 
-    if (!f) // печаль, если файл не открылся
-        throw "unable to open input file";
+    if (!f) { // печаль, если файл не открылся
+        std::cout << "Error: unable to open input file" << std::endl;
+        return false;
+    }
 
-    if (!(f >> nx >> ny >> k1 >> k2 >> threads))
-        throw "unable to read from file";
-
-    if (nx < 1)
-        throw "Nx parameter in file is invalid";
-
-    if (ny < 1)
-        throw "Ny parameter in file is invalid";
-
-    if (k1 < 0)
-        throw "k1 parameter in file is invalid";
-
-    if (k2 < 0)
-        throw "k2 parameter in file is invalid";
-
-    if (k1 + k2 == 0)
-        throw "k1 and k2 == 0";
+    if (!(f >> nx >> ny >> k1 >> k2 >> threads)) {
+        std::cout << "Error: unable to read from file" << std::endl;
+        f.close(); // закрываем файл
+        return false;
+    }
 
     f.close(); // закрываем файл
+
+    if (nx < 1) {
+        std::cout << "Error: Nx parameter in file is invalid (" << nx << ")" << std::endl;
+        return false;
+    }
+
+    if (ny < 1) {
+        std::cout << "Error: Ny parameter in file is invalid (" << ny << ")" << std::endl;
+        return false;
+    }
+
+    if (k1 < 0) {
+        std::cout << "Error: k1 parameter in file is invalid (" << k1 << ")" << std::endl;
+        return false;
+    }
+
+    if (k2 < 0) {
+        std::cout << "Error: k2 parameter in file is invalid (" << k2 << ")" << std::endl;
+        return false;
+    }
+
+    if (k1 + k2 == 0) {
+        std::cout << "Error: k1 and k2 == 0" << std::endl;
+        return false;
+    }
+
+    if (threads <= 0) {
+        std::cout << "Error: threads parameter is invalid (" << threads << ")" << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 // парсинг из аргументов
-void ArgumentParser::ParseFromArgv(int argc, char **argv) {
-    if (!IsInteger(argv[1]))
-        throw "Nx parameter is not integer";
+bool ArgumentParser::ParseFromArgv(int argc, char **argv) {
+    if (!IsInteger(argv[1])) {
+        std::cout << "Error: Nx parameter is not integer (" << argv[1] << ")" << std::endl;
+        return false;
+    }
 
-    if (!IsInteger(argv[2]))
-        throw "Ny parameter is not integer";
+    if (!IsInteger(argv[2])) {
+        std::cout << "Error: Ny parameter is not integer (" << argv[2] << ")" << std::endl;
+        return false;
+    }
 
-    if (!IsInteger(argv[3]))
-        throw "k1 parameter is not integer";
+    if (!IsInteger(argv[3])) {
+        std::cout << "Error: k1 parameter is not integer (" << argv[3] << ")" << std::endl;
+        return false;
+    }
 
-    if (!IsInteger(argv[4]))
-        throw "k2 parameter is not integer";
+    if (!IsInteger(argv[4])) {
+        std::cout << "Error: k2 parameter is not integer (" << argv[4] << ")" << std::endl;
+        return false;
+    }
 
-    if (!IsInteger(argv[5]))
-        throw "threads parameter is not integer";
+    if (!IsInteger(argv[5])) {
+        std::cout << "Error: threads parameter is not integer" << std::endl;
+        return false;
+    }
 
     // парсим в настоящие аргументы
     nx = atoi(argv[1]);
@@ -69,37 +104,54 @@ void ArgumentParser::ParseFromArgv(int argc, char **argv) {
     k2 = atoi(argv[4]);
     threads = atoi(argv[5]);
 
-    if (nx == 0 || ny == 0)
-        throw "invalid value of Nx or Ny ";
+    if (nx == 0 || ny == 0) {
+        std::cout << "Error: invalid value of Nx or Ny " << std::endl;
+        return false;
+    }
 
-    if (k1 + k2 == 0)
-        throw "k1 and k2 == 0";
+    if (k1 + k2 == 0) {
+        std::cout << "Error: k1 and k2 == 0" << std::endl;
+        return false;
+    }
 
-    if (threads == 0)
-        throw "threads is zero";
+    if (threads == 0) {
+        std::cout << "Error: threads is zero" << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
-ArgumentParser::ArgumentParser(int argc, char **argv) {
-    if (argc < 2 || argc == 4 || argc == 5 || argc > 7) // если некорректное количество аргументов
-        throw "invalid arguments. Try ./generate --help for usage";
+bool ArgumentParser::ParseArgs(int argc, char **argv) {
+    if (argc < 2 || argc == 4 || argc == 5 || argc > 7) { // если некорректное количество аргументов
+        std::cout << "Error: invalid arguments. Try ./generate --help for usage";
+        return false;
+    }
 
-    // если запуск вида ./generate path [debug]
+    bool isCorrect = true; // всё ли корректно
+
+    // если запуск вида ./main path [debug]
     if (argc == 2 || argc == 3) {
-        ParseFromFile(argv[1]);
+        isCorrect = ParseFromFile(argv[1]);
     }
     else {
-        ParseFromArgv(argc, argv);
+        isCorrect = ParseFromArgv(argc, argv);
     }
 
+    if (!isCorrect)
+        return false;
+
     if (argc == 3) {
-        ParseDebug(argv[2]);
+        isCorrect = ParseDebug(argv[2]);
     }
     else if (argc == 7) {
-        ParseDebug(argv[6]);
+        isCorrect = ParseDebug(argv[6]);
     }
     else {
         debug = false;
     }
+
+    return isCorrect;
 }
 
 int ArgumentParser::GetNx() const {

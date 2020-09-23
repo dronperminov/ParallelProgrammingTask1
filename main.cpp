@@ -9,9 +9,10 @@ using namespace std;
 
 // вывод информационного сообщения
 void Help() {
-    cout << "Usage: ./generate path [debug] or ./generate Nx Ny k1 k2 T [debug]" << endl;
-    cout << "Args description:" << endl;
-    cout << "path  - path to file for read for args" << endl;
+    cout << "Usage: ./main path [debug] or ./main Nx Ny k1 k2 T [debug]" << endl;
+    cout << endl;
+    cout << "Arguments description:" << endl;
+    cout << "path  - path to file with arguments" << endl;
     cout << "Nx    - number of columns in grid (natural)" << endl;
     cout << "Ny    - number of rows in grid (natural)" << endl;
     cout << "k1    - number of non divisible cells (integer >= 0)" << endl;
@@ -57,16 +58,13 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    try {
-        ArgumentParser parser(argc, argv);
+    ArgumentParser parser;
 
-        if (parser.GetDebug())
-            parser.PrintArguments();
-
-        Solve(parser);
-    }
-    catch (const char *error) {
-        cout << "Error: " << error << endl;
+    if (!parser.ParseArgs(argc, argv))
         return -1;
-    }
+
+    if (parser.GetDebug())
+        parser.PrintArguments();
+
+    Solve(parser);
 }
