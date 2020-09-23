@@ -1,6 +1,6 @@
 COMPILER=g++
 FLAGS=-O3 -fopenmp -pedantic -Wall
-FILES=ArgumentParser.cpp GraphGenerator.cpp GraphFiller.cpp VectorMath.cpp
+FILES=ArgumentParser.cpp GraphGenerator.cpp GraphFiller.cpp VectorMath.cpp ConjugateGradientSolver.cpp
 
 all: main tests
 

@@ -53,16 +53,17 @@ void GraphFiller::Fill(double *&a, double *&b, bool showInfo) const {
 
     TimePoint t1 = Time::now(); // останавливаем замер времени
     ms time = std::chrono::duration_cast<ms>(t1 - t0); // вычисляем разницу времени
-
-    if (showInfo) {
-        std::cout << std::endl << "Graph filling is end" << std::endl;
-    }
     
     if (debug) {
         PrintDebug(a, b);
     }
 
     if (showInfo) {
-        std::cout << "Elapsed time: " << time.count() << "ms" << std::endl;
+        std::cout << "+--------------------------------------+" << std::endl;
+        std::cout << "|               Fill part              |" << std::endl;
+        std::cout << "+--------------------+-----------------+" << std::endl;
+        std::cout << "|   Elapsed time, ms | " << std::setw(15) << time.count() << " |" << std::endl;
+        std::cout << "+--------------------+-----------------+" << std::endl;
+        std::cout << std::endl;
     }
 }

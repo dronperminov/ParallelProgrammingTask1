@@ -29,7 +29,7 @@ bool ArgumentParser::ParseFromFile(const char *path) {
         return false;
     }
 
-    if (!(f >> nx >> ny >> k1 >> k2 >> threads)) {
+    if (!(f >> nx >> ny >> k1 >> k2 >> eps >> threads)) {
         std::cout << "Error: unable to read from file" << std::endl;
         f.close(); // закрываем файл
         return false;
@@ -54,6 +54,11 @@ bool ArgumentParser::ParseFromFile(const char *path) {
 
     if (k2 < 0) {
         std::cout << "Error: k2 parameter in file is invalid (" << k2 << ")" << std::endl;
+        return false;
+    }
+
+    if (eps < 1e-15) {
+        std::cout << "Error: eps parameter in file is invalid (" << eps << ")" << std::endl;
         return false;
     }
 
@@ -92,8 +97,8 @@ bool ArgumentParser::ParseFromArgv(int argc, char **argv) {
         return false;
     }
 
-    if (!IsInteger(argv[5])) {
-        std::cout << "Error: threads parameter is not integer" << std::endl;
+    if (!IsInteger(argv[6])) {
+        std::cout << "Error: threads parameter is not integer (" << argv[6] << ")" << std::endl;
         return false;
     }
 
@@ -102,7 +107,8 @@ bool ArgumentParser::ParseFromArgv(int argc, char **argv) {
     ny = atoi(argv[2]);
     k1 = atoi(argv[3]);
     k2 = atoi(argv[4]);
-    threads = atoi(argv[5]);
+    eps = atof(argv[5]);
+    threads = atoi(argv[6]);
 
     if (nx == 0 || ny == 0) {
         std::cout << "Error: invalid value of Nx or Ny " << std::endl;
@@ -111,6 +117,11 @@ bool ArgumentParser::ParseFromArgv(int argc, char **argv) {
 
     if (k1 + k2 == 0) {
         std::cout << "Error: k1 and k2 == 0" << std::endl;
+        return false;
+    }
+
+    if (eps < 1e-15) {
+        std::cout << "Error: eps parameter is invalid (" << eps << ")" << std::endl;
         return false;
     }
 
@@ -123,8 +134,8 @@ bool ArgumentParser::ParseFromArgv(int argc, char **argv) {
 }
 
 bool ArgumentParser::ParseArgs(int argc, char **argv) {
-    if (argc < 2 || argc == 4 || argc == 5 || argc > 7) { // если некорректное количество аргументов
-        std::cout << "Error: invalid arguments. Try ./generate --help for usage";
+    if (argc != 2 && argc != 3 && argc != 7 && argc != 8) { // если некорректное количество аргументов
+        std::cout << "Error: invalid arguments. Try ./main --help for usage";
         return false;
     }
 
@@ -134,7 +145,7 @@ bool ArgumentParser::ParseArgs(int argc, char **argv) {
     if (argc == 2 || argc == 3) {
         isCorrect = ParseFromFile(argv[1]);
     }
-    else {
+    else { // запуск вида ./main nx ny k1 k2 eps T [debug]
         isCorrect = ParseFromArgv(argc, argv);
     }
 
@@ -144,8 +155,8 @@ bool ArgumentParser::ParseArgs(int argc, char **argv) {
     if (argc == 3) {
         isCorrect = ParseDebug(argv[2]);
     }
-    else if (argc == 7) {
-        isCorrect = ParseDebug(argv[6]);
+    else if (argc == 8) {
+        isCorrect = ParseDebug(argv[7]);
     }
     else {
         debug = false;
@@ -170,6 +181,10 @@ int ArgumentParser::GetK2() const {
     return k2;
 }
 
+double ArgumentParser::GetEps() const {
+    return eps;
+}
+
 int ArgumentParser::GetThreads() const {
     return threads;
 }
@@ -185,5 +200,6 @@ void ArgumentParser::PrintArguments() const {
     std::cout << "Ny: " << ny << std::endl;
     std::cout << "k1: " << k1 << std::endl;
     std::cout << "k2: " << k2 << std::endl;
-    std::cout << " T: " << threads << std::endl;
+    std::cout << "eps: " << eps << std::endl;
+    std::cout << "T: " << threads << std::endl;
 }

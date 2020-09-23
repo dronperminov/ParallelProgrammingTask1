@@ -9,6 +9,7 @@ class ArgumentParser {
     int ny; // количество строк сетки
     int k1; // количество клеток без деления
     int k2; // количество клеток с делением
+    double eps; // точность
     int threads; // количество потоков
     bool debug; // нужна ли отладка
 
@@ -25,6 +26,7 @@ public:
     int GetNy() const;
     int GetK1() const;
     int GetK2() const;
+    double GetEps() const;
     int GetThreads() const;
     bool GetDebug() const;
 

@@ -146,14 +146,15 @@ void GraphGenerator::PrintArray(int *array, int n, const char *message) const {
 
 // вывод сводной информации
 void GraphGenerator::PrintInfo(int n, int *ia, int *ja, const ms &time) const {
+    std::cout << "+--------------------------------------+" << std::endl;
+    std::cout << "|             Generate part            |" << std::endl;
     std::cout << "+--------------------+-----------------+" << std::endl;
-    std::cout << "|      Feature       |      Value      |" << std::endl;
+    std::cout << "|           Vertices | " << std::setw(15) << n << " |" << std::endl;
+    std::cout << "|              Edges | " << std::setw(15) << ia[n] << " |" << std::endl;
+    std::cout << "| Portrait non zeros | " << std::setw(15) << GetNotZeroCount(ja, ia[n]) << " |" << std::endl;
+    std::cout << "|   Elapsed time, ms | " << std::setw(15) << time.count() << " |" << std::endl;
     std::cout << "+--------------------+-----------------+" << std::endl;
-    std::cout << "|           vertices | " << std::setw(15) << n << " |" << std::endl;
-    std::cout << "|              edges | " << std::setw(15) << ia[n] << " |" << std::endl;
-    std::cout << "| portrait non zeros | " << std::setw(15) << GetNotZeroCount(ja, ia[n]) << " |" << std::endl;
-    std::cout << "|   elapsed time, ms | " << std::setw(15) << time.count() << " |" << std::endl;
-    std::cout << "+--------------------+-----------------+" << std::endl;
+    std::cout << std::endl;
 }
 
 // формирование массива IA
@@ -212,10 +213,6 @@ void GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
 
     TimePoint t1 = Time::now(); // останавливаем замер времени
     ms time = std::chrono::duration_cast<ms>(t1 - t0); // вычисляем разницу времени
-
-    if (showInfo) {
-        std::cout << "Graph generation is end" << std::endl;
-    }
 
     if (debug) {
         std::cout << "Edges count: " << ia[n] << std::endl;

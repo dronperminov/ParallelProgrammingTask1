@@ -4,12 +4,13 @@
 #include "ArgumentParser.h"
 #include "GraphGenerator.h"
 #include "GraphFiller.h"
+#include "ConjugateGradientSolver.h"
 
 using namespace std;
 
 // вывод информационного сообщения
 void Help() {
-    cout << "Usage: ./main path [debug] or ./main Nx Ny k1 k2 T [debug]" << endl;
+    cout << "Usage: ./main path [debug] or ./main Nx Ny k1 k2 eps T [debug]" << endl;
     cout << endl;
     cout << "Arguments description:" << endl;
     cout << "path  - path to file with arguments" << endl;
@@ -17,6 +18,7 @@ void Help() {
     cout << "Ny    - number of rows in grid (natural)" << endl;
     cout << "k1    - number of non divisible cells (integer >= 0)" << endl;
     cout << "k2    - number of divisible cells (integer >= 0)" << endl;
+    cout << "eps   - relative solution accuracy (real)" << endl;
     cout << "T     - number of threads (natural)" << endl;
     cout << "debug - need print debug info or not (y/n)" << endl;
 }
@@ -27,6 +29,7 @@ void Solve(const ArgumentParser& parser) {
     int ny = parser.GetNy();
     int k1 = parser.GetK1();
     int k2 = parser.GetK2();
+    double eps = parser.GetEps();
     int threads = parser.GetThreads();
     bool debug = parser.GetDebug();
 
@@ -44,11 +47,19 @@ void Solve(const ArgumentParser& parser) {
     GraphFiller filler(n, ia, ja, threads, debug);
     filler.Fill(a, b); // заполняем массив
 
+    double *x = NULL;
+    int iterations;
+    double res;
+
+    ConjugateGradientSolver solver(n, ia, ja, a, b, eps, threads, debug);
+    solver.Solve(x, iterations, res);
+
     // освобождаем выделенную память
     delete[] ia;
     delete[] ja;
     delete[] a;
     delete[] b;
+    delete[] x;
 }
 
 int main(int argc, char **argv) {
