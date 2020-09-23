@@ -2,6 +2,7 @@
 #include <cassert>
 #include "GraphGenerator.h"
 #include "GraphFiller.h"
+#include "VectorMath.h"
 
 void TestGenerator(int nx, int ny, int k1, int k2, int expectedN, int expectedEdges, int *expectedIA, int *expectedJA) {
     int n;
@@ -130,7 +131,73 @@ void FillerTests() {
     TestFiller(n, ia3, ja3, a3);
 }
 
+void TestDot(double *x, double *y, int n, double expectedDot, double eps = 1e-15) {
+    std::cout << "Dot test for n = " << n << ": ";
+    assert(fabs(Dot(x, y, n, 32) - expectedDot) < eps);
+    std::cout << "OK" << std::endl;
+}
+
+void TestLinearCombination(double *x, double *y, double a, double b, int n, double *expectedVector, double eps = 1e-15) {
+    std::cout << "Linear combination test for n = " << n << " and a = " << a << ", b = " << b << ": ";
+    LinearCombination(a, x, b, y, n, 32);
+
+    for (int i = 0; i < n; i++)
+        assert(fabs(x[i] - expectedVector[i]) < eps);
+
+    std::cout << "OK" << std::endl;
+}
+
+void TestMatrixVectorMultiplication(int *ia, int *ja, double *a, int n, double *x, double *expectedVector, double eps = 1e-15) {
+    std::cout << "Test matrix to vector multiplication for n = " << n << ": ";
+
+    double *y = new double[n];
+    MatrixVectorMultiplication(ia, ja, a, n, x, y, 32);
+
+    for (int i = 0; i < n; i++)
+        assert(fabs(y[i] - expectedVector[i]) < eps);
+
+    std::cout << "OK" << std::endl;
+}
+
+void VectorMathTests(double eps = 1e-15) {
+    double x1[3] = { 1, -0.5, 2 };
+    double y1[3] = { 5, 8, -0.5 };
+    double xy1[3] = { -13, -25, 5.5 };
+
+    double x2[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    double y2[10] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+    double xy2[10] = { 0, -5.5, -11, -16.5, -22, -27.5, -33, -38.5, -44, -49.5 };
+
+    std::cout << std::endl;
+    TestDot(x1, y1, 3, 0);
+    TestDot(x2, y2, 1, 10);
+    TestDot(x2, y2, 2, 28);
+    TestDot(x2, y2, 5, 110);
+    TestDot(x2, y2, 10, 220);
+
+    std::cout << std::endl;
+    TestLinearCombination(x1, y1, 2, -3, 3, xy1);
+    TestLinearCombination(x2, y2, -5, 0.5, 10, xy2);
+
+    int ia1[4] = { 0, 2, 3, 4 };
+    int ja1[4] = { 1, 2, 0, 2 };
+    double a1[4] = { -5, 2, 1, -2 };
+    double vx1[3] = { 1, 2, 3 };
+    double vy1[3] = { -4, 1, -6 };
+
+    int ia2[6] = { 0, 1, 2, 3, 4, 5 };
+    int ja2[5] = { 0, 1, 2, 3, 4 };
+    double a2[5] = { 1, 0.5, 3, -4.5, 5 };
+    double vx2[5] = { -2, 2, -2, 2, -2 };
+    double vy2[5] = { -2, 1, -6, -9, -10 };
+
+    std::cout << std::endl;
+    TestMatrixVectorMultiplication(ia1, ja1, a1, 3, vx1, vy1);
+    TestMatrixVectorMultiplication(ia2, ja2, a2, 5, vx2, vy2);
+}
+
 int main() {
     GeneratorTests();
     FillerTests();
+    VectorMathTests();
 }

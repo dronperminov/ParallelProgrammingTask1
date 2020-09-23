@@ -1,10 +1,11 @@
 COMPILER=g++
 FLAGS=-O3 -fopenmp -pedantic -Wall
+FILES=ArgumentParser.cpp GraphGenerator.cpp GraphFiller.cpp VectorMath.cpp
 
 all: main tests
 
 main:
-	$(COMPILER) $(FLAGS) ArgumentParser.cpp GraphGenerator.cpp GraphFiller.cpp main.cpp -o main
+	$(COMPILER) $(FLAGS) $(FILES) main.cpp -o main
 
 tests:
-	$(COMPILER) $(FLAGS) GraphGenerator.cpp GraphFiller.cpp tests.cpp -o tests
+	$(COMPILER) $(FLAGS) $(FILES) tests.cpp -o tests
