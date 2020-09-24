@@ -4,6 +4,7 @@
 double Dot(double *x, double *y, int n, int threads) {
     double result = 0;
 
+    #pragma omp parallel for reduction(+:result) num_threads(threads)
     for (int i = 0; i < n; i++) {
         result += x[i] * y[i];
     }

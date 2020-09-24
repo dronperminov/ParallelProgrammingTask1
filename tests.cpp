@@ -3,6 +3,7 @@
 #include "GraphGenerator.h"
 #include "GraphFiller.h"
 #include "VectorMath.h"
+#include "Time.h"
 
 void TestGenerator(int nx, int ny, int k1, int k2, int expectedN, int expectedEdges, int *expectedIA, int *expectedJA) {
     int n;
@@ -196,8 +197,100 @@ void VectorMathTests(double eps = 1e-15) {
     TestMatrixVectorMultiplication(ia2, ja2, a2, 5, vx2, vy2);
 }
 
+double GetRandomValue(double a = -50, double b = 50) {
+    return a + rand() * (b - a) / RAND_MAX;
+}
+
+void FillVector(double *vector, int n) {
+    for (int i = 0; i < n; i++)
+        vector[i] = GetRandomValue();
+}
+
+void DotPerformanceTest(double *x1, double *x2, int n, int threads, int loops = 100) {
+    TimePoint t0 = Time::now();
+
+    for (int i = 0; i < loops; i++)
+        Dot(x1, x2, n, threads);
+
+    TimePoint t1 = Time::now();
+    ms time = std::chrono::duration_cast<ms>(t1 - t0);
+
+    std::cout << "Time (T = " << threads << "): " << time.count() / (double) loops << " ms" << std::endl;
+}
+
+void LinearCombinationPerformanceTest(double *x1, double *x2, int n, int threads, int loops = 100) {
+    TimePoint t0 = Time::now();
+
+    double a = GetRandomValue();
+    double b = GetRandomValue();
+
+    for (int i = 0; i < loops; i++)
+        LinearCombination(a, x1, b, x2, n, threads);
+
+    TimePoint t1 = Time::now();
+    ms time = std::chrono::duration_cast<ms>(t1 - t0);
+
+    std::cout << "Time (T = " << threads << "): " << time.count() / (double) loops << " ms" << std::endl;
+}
+
+void MatrixVectorMultiplicationPerformanceTest(int *ia, int *ja, double *a, int n, double *x, double *y, int threads, int loops = 100) {
+    TimePoint t0 = Time::now();
+
+    for (int i = 0; i < loops; i++)
+        MatrixVectorMultiplication(ia, ja, a, n, x, y, threads);
+
+    TimePoint t1 = Time::now();
+    ms time = std::chrono::duration_cast<ms>(t1 - t0);
+
+    std::cout << "Time (T = " << threads << "): " << time.count() / (double) loops << " ms" << std::endl;
+}
+
+void VectorMathPerformanceTests() {
+    const int n = 1000;
+    double x1[n];
+    double x2[n];
+
+    FillVector(x1, n);
+    FillVector(x2, n);
+
+    std::cout << std::endl;
+    std::cout << "Performance math tests (n = " << n << ")" << std::endl;
+    std::cout << "Dot:" << std::endl;
+    for (int threads = 1; threads <= 32; threads *= 2)
+        DotPerformanceTest(x1, x2, n, threads);
+
+    std::cout << std::endl;
+    std::cout << "Linear combination:" << std::endl;
+    for (int threads = 1; threads <= 32; threads *= 2)
+        LinearCombinationPerformanceTest(x1, x2, n, threads);
+
+    int ia[n + 1];
+    int *ja = new int[n*n];
+    double *a = new double[n*n];
+
+    FillVector(a, n*n);
+
+    ia[0] = 0;
+
+    for (int i = 0; i < n; i++) {
+        ia[i + 1] = ia[i] + n;
+
+        for (int j = 0; j < n; j++)
+            ja[i * n + j] = j;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Matrix vector multiplication:" << std::endl;
+    for (int threads = 1; threads <= 32; threads *= 2)
+        MatrixVectorMultiplicationPerformanceTest(ia, ja, a, n, x1, x2, threads);
+
+    delete[] ja;
+    delete[] a;
+}
+
 int main() {
     GeneratorTests();
     FillerTests();
     VectorMathTests();
+    VectorMathPerformanceTests();
 }
