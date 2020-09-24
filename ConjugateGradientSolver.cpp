@@ -50,7 +50,7 @@ void ConjugateGradientSolver::PrintVector(double *x) const {
 }
 
 // решение системы
-void ConjugateGradientSolver::Solve(double *&x, int &iterations, double &res) {
+int ConjugateGradientSolver::Solve(double *&x, int &iterations, double &res, bool printInfo) {
     TimePoint t0 = Time::now(); // запускаем замер времени
 
     x = new double[n]; // начальное решение
@@ -108,14 +108,16 @@ void ConjugateGradientSolver::Solve(double *&x, int &iterations, double &res) {
     ms time = std::chrono::duration_cast<ms>(t1 - t0); // вычисляем разницу времени
     res = GetResidualNorm(x, debug_r);
 
-    std::cout << std::right;
-    std::cout << "+--------------------------------------+" << std::endl;
-    std::cout << "|              Solve part              |" << std::endl;
-    std::cout << "+--------------------+-----------------+" << std::endl;
-    std::cout << "|   Elapsed time, ms | " << std::setw(15) << time.count() << " |" << std::endl;
-    std::cout << "|           |b - Ax| | " << std::setw(15) << res << " |" << std::endl;
-    std::cout << "|         Iterations | " << std::setw(15) << iterations << " |" << std::endl;
-    std::cout << "+--------------------+-----------------+" << std::endl;
+    if (printInfo) {
+        std::cout << std::right;
+        std::cout << "+--------------------------------------+" << std::endl;
+        std::cout << "|              Solve part              |" << std::endl;
+        std::cout << "+--------------------+-----------------+" << std::endl;
+        std::cout << "|   Elapsed time, ms | " << std::setw(15) << time.count() << " |" << std::endl;
+        std::cout << "|           |b - Ax| | " << std::setw(15) << res << " |" << std::endl;
+        std::cout << "|         Iterations | " << std::setw(15) << iterations << " |" << std::endl;
+        std::cout << "+--------------------+-----------------+" << std::endl;
+    }
 
     // освобождаем память
     delete[] r;
@@ -124,4 +126,6 @@ void ConjugateGradientSolver::Solve(double *&x, int &iterations, double &res) {
     delete[] p_k;
     delete[] q_k;
     delete[] debug_r;
+
+    return time.count(); // возвращаем время
 }

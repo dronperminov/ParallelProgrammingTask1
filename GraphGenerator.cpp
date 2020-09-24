@@ -203,7 +203,7 @@ GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, int threads, bool
     this->debug = debug;
 }
 
-void GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
+int GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
     TimePoint t0 = Time::now(); // запускаем замер времени
 
     n = GetVerticesCount(); // получаем количество вершин
@@ -228,4 +228,5 @@ void GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
     }
 
     delete[] edges; // освобождаем память
+    return time.count(); // возвращаем время
 }

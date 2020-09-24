@@ -37,5 +37,5 @@ class GraphGenerator {
 public:
     GraphGenerator(int nx, int ny, int k1, int k2, int threads, bool debug);
 
-    void Generate(int &n, int *&ia, int *&ja, bool showInfo = true);
+    int Generate(int &n, int *&ia, int *&ja, bool showInfo = true);
 };

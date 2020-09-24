@@ -23,5 +23,5 @@ class ConjugateGradientSolver {
 public:
     ConjugateGradientSolver(int n, int *ia, int *ja, double *a, double *b, double eps, int threads, bool debug);
 
-    void Solve(double *&x, int &iterations, double &res); // решение системы
+    int Solve(double *&x, int &iterations, double &res, bool printInfo = true); // решение системы
 };

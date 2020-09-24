@@ -1,7 +1,9 @@
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include "GraphGenerator.h"
 #include "GraphFiller.h"
+#include "ConjugateGradientSolver.h"
 #include "VectorMath.h"
 #include "Time.h"
 
@@ -288,9 +290,70 @@ void VectorMathPerformanceTests() {
     delete[] a;
 }
 
+void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads, int loops = 5) {
+    int generationTime = 0;
+    int fillTime = 0;
+    int solveTime = 0;
+
+    for (int i = 0; i < loops; i++) {
+        int n = 0;
+        int *ia = NULL;
+        int *ja = NULL;
+        double *a = NULL;
+        double *b = NULL;
+        double *x = NULL;
+        int iterations;
+        double res;
+
+        GraphGenerator generator(nx, ny, k1, k2, threads, false);
+        generationTime += generator.Generate(n, ia, ja, false); // запускаем генерацию
+
+        GraphFiller filler(n, ia, ja, threads, false);
+        fillTime += filler.Fill(a, b, false); // заполняем массив
+
+        ConjugateGradientSolver solver(n, ia, ja, a, b, eps, threads, false);
+        solveTime += solver.Solve(x, iterations, res, false);
+
+        // освобождаем выделенную память
+        delete[] ia;
+        delete[] ja;
+        delete[] a;
+        delete[] b;
+        delete[] x;
+    }
+
+    std::cout << "| " << std::setw(7) << threads;
+    std::cout << " | " << std::setw(10) << generationTime / (double)loops;
+    std::cout << " | " << std::setw(10) << fillTime / (double)loops;
+    std::cout << " | " << std::setw(11) << solveTime / (double)loops << " |" << std::endl;
+}
+
+void PerformanceTest() {
+    int k1 = 29;
+    int k2 = 37;
+    double eps = 1e-5;
+    int n[4] = { 100, 1000, 4000, 8000 };
+
+    for (int i = 0; i < 4; i++) {
+        std::cout << std::endl;
+        std::cout << "Total pefrormance test for Nx = " << n[i] << ", Ny = " << n[i] << ":" << std::endl;
+        std::cout << "+---------+------------+------------+-------------+" << std::endl;
+        std::cout << "| Threads | Generation |    Fill    |    Solve    |" << std::endl;
+        std::cout << "+---------+------------+------------+-------------+" << std::endl;
+
+        for (int threads = 1; threads <= 32; threads *= 2) {
+            MakePefrormanceTest(n[i], n[i], k1, k2, eps, threads);
+        }
+
+        std::cout << "+---------+------------+------------+-------------+" << std::endl;
+        std::cout << std::endl;
+    }
+}
+
 int main() {
     GeneratorTests();
     FillerTests();
     VectorMathTests();
     VectorMathPerformanceTests();
+    PerformanceTest();
 }

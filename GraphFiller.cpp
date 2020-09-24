@@ -24,7 +24,7 @@ void GraphFiller::PrintDebug(double *a, double *b) const {
 }
 
 // заполнение
-void GraphFiller::Fill(double *&a, double *&b, bool showInfo) const {
+int GraphFiller::Fill(double *&a, double *&b, bool showInfo) const {
     TimePoint t0 = Time::now(); // запускаем замер времени
 
     a = new double[ia[n]];
@@ -66,4 +66,6 @@ void GraphFiller::Fill(double *&a, double *&b, bool showInfo) const {
         std::cout << "+--------------------+-----------------+" << std::endl;
         std::cout << std::endl;
     }
+
+    return time.count(); // возвращаем время
 }
