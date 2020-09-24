@@ -208,7 +208,7 @@ void FillVector(double *vector, int n) {
         vector[i] = GetRandomValue();
 }
 
-void DotPerformanceTest(double *x1, double *x2, int n, int threads, int loops = 100) {
+void DotPerformanceTest(double *x1, double *x2, int n, int threads, int loops = 10000) {
     TimePoint t0 = Time::now();
 
     for (int i = 0; i < loops; i++)
@@ -220,7 +220,7 @@ void DotPerformanceTest(double *x1, double *x2, int n, int threads, int loops = 
     std::cout << "Time (T = " << threads << "): " << time.count() / (double) loops << " ms" << std::endl;
 }
 
-void LinearCombinationPerformanceTest(double *x1, double *x2, int n, int threads, int loops = 100) {
+void LinearCombinationPerformanceTest(double *x1, double *x2, int n, int threads, int loops = 10000) {
     TimePoint t0 = Time::now();
 
     double a = GetRandomValue();
@@ -235,7 +235,7 @@ void LinearCombinationPerformanceTest(double *x1, double *x2, int n, int threads
     std::cout << "Time (T = " << threads << "): " << time.count() / (double) loops << " ms" << std::endl;
 }
 
-void MatrixVectorMultiplicationPerformanceTest(int *ia, int *ja, double *a, int n, double *x, double *y, int threads, int loops = 100) {
+void MatrixVectorMultiplicationPerformanceTest(int *ia, int *ja, double *a, int n, double *x, double *y, int threads, int loops = 1000) {
     TimePoint t0 = Time::now();
 
     for (int i = 0; i < loops; i++)
@@ -290,7 +290,7 @@ void VectorMathPerformanceTests() {
     delete[] a;
 }
 
-void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads, int loops = 5) {
+void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads, int loops = 10) {
     int generationTime = 0;
     int fillTime = 0;
     int solveTime = 0;
@@ -332,7 +332,7 @@ void PerformanceTest() {
     int k1 = 29;
     int k2 = 37;
     double eps = 1e-5;
-    int n[4] = { 100, 1000, 4000, 8000 };
+    int n[4] = { 500, 1000, 2000, 4000 };
 
     for (int i = 0; i < 4; i++) {
         std::cout << std::endl;
