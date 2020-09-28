@@ -107,7 +107,7 @@ double MatrixVectorMultiplicationPerformanceTest(int n, int threads, int loops =
 void DotPerformanceTest() {
     std::cout << "### Скалярное произведение векторов" << std::endl;
     std::cout << "| T \\ N |   1000  |  10000  |  100000 | 1000000 |" << std::endl;
-    std::cout << "|   :=: |     :=: |     :=: |     :=: |     :=: |" << std::endl;
+    std::cout << "|   :-: |     :-: |     :-: |     :-: |     :-: |" << std::endl;
 
     for (int threads = 1; threads <= 32; threads *= 2) {
         std::cout << "| " << std::setw(5) << threads;
@@ -124,7 +124,7 @@ void DotPerformanceTest() {
 void LinearCombinationPerformanceTest() {
     std::cout << "### Линейная комбинация векторов" << std::endl;
     std::cout << "| T \\ N |   1000  |  10000  |  100000 | 1000000 |" << std::endl;
-    std::cout << "|   :=: |     :=: |     :=: |     :=: |     :=: |" << std::endl;
+    std::cout << "|   :-: |     :-: |     :-: |     :-: |     :-: |" << std::endl;
 
     for (int threads = 1; threads <= 32; threads *= 2) {
         std::cout << "| " << std::setw(5) << threads;
@@ -141,7 +141,7 @@ void LinearCombinationPerformanceTest() {
 void MatrixVectorMultiplicationPerformanceTest() {
     std::cout << "### Матрично-векторное произведение" << std::endl;
     std::cout << "| T \\ N |  100  |  1000 |" << std::endl;
-    std::cout << "|   :=: |   :=: |   :=: |" << std::endl;
+    std::cout << "|   :-: |   :-: |   :-: |" << std::endl;
 
     for (int threads = 1; threads <= 32; threads *= 2) {
         std::cout << "| " << std::setw(5) << threads;
@@ -212,7 +212,7 @@ void PerformanceTest() {
     for (int i = 0; i < 3; i++) {
         std::cout << "### Nx = " << n[i] << ", Ny = " << n[i] << ":" << std::endl;
         std::cout << "|   T   | Генерация, мс | Заполнение, мс |  Решение, мс  |" << std::endl;
-        std::cout << "|   :=: |           :=: |            :=: |           :=: |" << std::endl;
+        std::cout << "|   :-: |           :-: |            :-: |           :-: |" << std::endl;
 
         for (int threads = 1; threads <= 32; threads *= 2) {
             MakePefrormanceTest(n[i], n[i], k1, k2, eps, threads);
