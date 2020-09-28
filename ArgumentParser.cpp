@@ -9,6 +9,36 @@ bool ArgumentParser::IsInteger(const char *s) const {
     return s[0] != '\0'; // целое число, если строка не пуста
 }
 
+// проверка, что строка является вещественным числом
+bool ArgumentParser::IsReal(const char *s) const {
+    bool point = false;
+    bool exponent = false;
+
+    for (int i = 0; s[i]; i++) {
+        if (s[i] == '.') {
+            if (point || exponent)
+                return false;
+
+            point = true;
+        }
+        else if (s[i] == 'e') {
+            if (exponent || i == 0)
+                return false;
+
+            exponent = true;
+        }
+        else if (s[i] == '-') {
+            if (i == 0 || s[i - 1] != 'e')
+                return false;
+        }
+        else if (s[i] < '0' || s[i] > '9') {
+            return false;
+        }
+    }
+
+    return s[0] != '\0'; // вещественное число, если строка не пуста
+}
+
 // парсинг отладки
 bool ArgumentParser::ParseDebug(char *arg) {
     if (!strcmp(arg, "f")) {
@@ -104,6 +134,11 @@ bool ArgumentParser::ParseFromArgv(int argc, char **argv) {
 
     if (!IsInteger(argv[4])) {
         std::cout << "Error: k2 parameter is not integer (" << argv[4] << ")" << std::endl;
+        return false;
+    }
+
+    if (!IsReal(argv[5])) {
+        std::cout << "Error: eps parameter is not real (" << argv[5] << ")" << std::endl;
         return false;
     }
 
