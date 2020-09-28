@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <clocale>
+#include <vector>
 #include <omp.h>
 #include "GraphGenerator.h"
 #include "GraphFiller.h"
@@ -140,18 +141,50 @@ void LinearCombinationPerformanceTest() {
 
 void MatrixVectorMultiplicationPerformanceTest() {
     std::cout << "### Матрично-векторное произведение" << std::endl;
-    std::cout << "| T \\ N |  100  |  500  |  1000 |" << std::endl;
-    std::cout << "|   :-: |   :-: |   :-: |   :-: |" << std::endl;
+    std::cout << "| T \\ N |  250  |  500  |  1000 |  2000 |" << std::endl;
+    std::cout << "|   :-: |   :-: |   :-: |   :-: |   :-: |" << std::endl;
 
     for (int threads = 1; threads <= 32; threads *= 2) {
         std::cout << "| " << std::setw(5) << threads;
-        std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(100, threads);
+        std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(250, threads);
         std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(500, threads);
         std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(1000, threads);
+        std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(2000, threads);
         std::cout << " |" << std::endl;
     }
 
     std::cout << std::endl;
+}
+
+void VectorMathSpeedUpTest() {
+    std::vector<double> spmv;
+    std::vector<double> dot;
+    std::vector<double> axpby;
+
+    for (int threads = 1; threads <= 32; threads *= 2) {
+        dot.push_back(DotPerformanceTest(100000, threads));
+        axpby.push_back(LinearCombinationPerformanceTest(100000, threads));
+        spmv.push_back(MatrixVectorMultiplicationPerformanceTest(1000, threads));
+    }
+
+    std::cout << "### OpenMP ускорение" << std::endl;
+    std::cout << "|      Ядро \\ T      |    2    |    4    |    8    |    16   |    32   |" << std::endl;
+    std::cout << "|                :-: |     :-: |     :-: |     :-: |     :-: |     :-: |" << std::endl;
+
+    std::cout << "|   Dot (N = 100000) |";
+    for (size_t i = 1; i < dot.size(); i++)
+        std::cout << " " << std::setw(7) << std::setprecision(3) << (dot[0] / dot[i]) << " |";
+    std::cout << std::endl;
+
+    std::cout << "| axpby (N = 100000) |";
+    for (size_t i = 1; i < axpby.size(); i++)
+        std::cout << " " << std::setw(7) << std::setprecision(3) << (axpby[0] / axpby[i]) << " |";
+    std::cout << std::endl;
+
+    std::cout << "|    SpMV (N = 1000) |";
+    for (size_t i = 1; i < spmv.size(); i++)
+        std::cout << " " << std::setw(7) << std::setprecision(3) << (spmv[0] / spmv[i]) << " |";
+    std::cout << std::endl << std::endl;
 }
 
 void VectorMathPerformanceTest() {
@@ -159,6 +192,7 @@ void VectorMathPerformanceTest() {
     DotPerformanceTest();
     LinearCombinationPerformanceTest();
     MatrixVectorMultiplicationPerformanceTest();
+    VectorMathSpeedUpTest();
 }
 
 void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads, int loops = 10) {
