@@ -5,7 +5,7 @@
 #include "GraphFiller.h"
 #include "ConjugateGradientSolver.h"
 #include "VectorMath.h"
-#include "Time.h"
+#include "Types.h"
 
 double GetRandomValue(double a = -50, double b = 50) {
     return a + rand() * (b - a) / RAND_MAX;

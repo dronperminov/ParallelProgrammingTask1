@@ -11,13 +11,23 @@ bool ArgumentParser::IsInteger(const char *s) const {
 
 // парсинг отладки
 bool ArgumentParser::ParseDebug(char *arg) {
-    if (strcmp(arg, "y") && strcmp(arg, "n")) {
-        std::cout << "Error: debug parameter is invalid" << std::endl;
-        return false;
+    if (!strcmp(arg, "f")) {
+        debug = FULL_DEBUG;
+        return true;
     }
 
-    debug = !strcmp(arg, "y");
-    return true;
+    if (!strcmp(arg, "s")) {
+        debug = SOLVE_DEBUG;
+        return true;
+    }
+
+    if (!strcmp(arg, "n")) {
+        debug = NO_DEBUG;
+        return true;
+    }
+
+    std::cout << "Error: debug parameter is invalid" << std::endl;
+    return false;
 }
 
 // парсинг из файла
@@ -159,7 +169,7 @@ bool ArgumentParser::ParseArgs(int argc, char **argv) {
         isCorrect = ParseDebug(argv[7]);
     }
     else {
-        debug = false;
+        debug = NO_DEBUG;
     }
 
     return isCorrect;
@@ -189,7 +199,7 @@ int ArgumentParser::GetThreads() const {
     return threads;
 }
 
-bool ArgumentParser::GetDebug() const {
+int ArgumentParser::GetDebug() const {
     return debug;
 }
 

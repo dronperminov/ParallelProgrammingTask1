@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include "Time.h"
+#include "Types.h"
 
 struct LinkInfo {
     int count; // количество элементов

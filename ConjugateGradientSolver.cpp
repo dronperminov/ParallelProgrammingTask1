@@ -1,6 +1,6 @@
 #include "ConjugateGradientSolver.h"
 
-ConjugateGradientSolver::ConjugateGradientSolver(int n, int *ia, int *ja, double *a, double *b, double eps, bool debug) {
+ConjugateGradientSolver::ConjugateGradientSolver(int n, int *ia, int *ja, double *a, double *b, double eps, int debug) {
     this->n = n;
     this->ia = ia;
     this->ja = ja;
@@ -72,7 +72,7 @@ int ConjugateGradientSolver::Solve(double *&x, int &iterations, double &res, boo
         VectorVectorMultiplication(m, r, z_k, n); // z_k = M^-1 * r_k
         double rho_k = Dot(r, z_k, n); // rho_k = <r_0, z_k>
 
-        if (debug) {
+        if (debug != NO_DEBUG) {
             std::cout << "Iteration " << iterations << ", |b - Ax|: " << GetResidualNorm(x, debug_r) << ", rho: " << rho_k << std::endl;
         }
 
@@ -99,7 +99,7 @@ int ConjugateGradientSolver::Solve(double *&x, int &iterations, double &res, boo
     }
     while (!isConverge);
 
-    if (debug) {
+    if (debug == FULL_DEBUG) {
         PrintVector(x);
     }
 

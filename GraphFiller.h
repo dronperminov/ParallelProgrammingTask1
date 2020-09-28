@@ -3,7 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include "Time.h"
+#include "Types.h"
 
 const int DIAGONAL_DOMINANCE_COEFFICIENT = 1.234; // коэффициент диагонального преобладания
 

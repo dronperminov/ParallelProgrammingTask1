@@ -22,7 +22,7 @@ void Help() {
     cout << "k2    - number of divisible cells (integer >= 0)" << endl;
     cout << "eps   - relative solution accuracy (real)" << endl;
     cout << "T     - number of threads (natural)" << endl;
-    cout << "debug - need print debug info or not (y/n)" << endl;
+    cout << "debug - print [f]ull, [s]olve or [n]o debug info (f/s/n)" << endl;
 }
 
 void Solve(const ArgumentParser& parser) {
@@ -33,7 +33,7 @@ void Solve(const ArgumentParser& parser) {
     int k2 = parser.GetK2();
     double eps = parser.GetEps();
     int threads = parser.GetThreads();
-    bool debug = parser.GetDebug();
+    int debug = parser.GetDebug();
 
     omp_set_num_threads(threads); // задаём потоки
 
@@ -42,13 +42,13 @@ void Solve(const ArgumentParser& parser) {
     int *ia = NULL;
     int *ja = NULL;
 
-    GraphGenerator generator(nx, ny, k1, k2, debug);
+    GraphGenerator generator(nx, ny, k1, k2, debug == FULL_DEBUG);
     generator.Generate(n, ia, ja); // запускаем генерацию
 
     double *a = NULL;
     double *b = NULL;
 
-    GraphFiller filler(n, ia, ja, debug);
+    GraphFiller filler(n, ia, ja, debug == FULL_DEBUG);
     filler.Fill(a, b); // заполняем массив
 
     double *x = NULL;
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     if (!parser.ParseArgs(argc, argv))
         return -1;
 
-    if (parser.GetDebug())
+    if (parser.GetDebug() == FULL_DEBUG)
         parser.PrintArguments();
 
     Solve(parser);

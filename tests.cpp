@@ -6,7 +6,6 @@
 #include "GraphFiller.h"
 #include "ConjugateGradientSolver.h"
 #include "VectorMath.h"
-#include "Time.h"
 
 void TestGenerator(int nx, int ny, int k1, int k2, int expectedN, int expectedEdges, int *expectedIA, int *expectedJA) {
     int n;

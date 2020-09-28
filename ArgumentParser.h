@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include "Types.h"
 
 class ArgumentParser {
     int nx; // количество столбцов сетки
@@ -11,7 +12,7 @@ class ArgumentParser {
     int k2; // количество клеток с делением
     double eps; // точность
     int threads; // количество потоков
-    bool debug; // нужна ли отладка
+    int debug; // режим отладки
 
     bool IsInteger(const char *s) const; // проверка, что строка является целым числом
 
@@ -28,7 +29,7 @@ public:
     int GetK2() const;
     double GetEps() const;
     int GetThreads() const;
-    bool GetDebug() const;
+    int GetDebug() const;
 
     void PrintArguments() const; // вывод аргументов
 };
