@@ -195,12 +195,8 @@ void VectorMathPerformanceTest() {
     VectorMathSpeedUpTest();
 }
 
-void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads, int loops = 10) {
+void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads, int &generationTime, int &fillTime, int &solveTime, int loops) {
     omp_set_num_threads(threads);
-
-    int generationTime = 0;
-    int fillTime = 0;
-    int solveTime = 0;
 
     for (int i = 0; i < loops; i++) {
         int n = 0;
@@ -228,6 +224,14 @@ void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads
         delete[] b;
         delete[] x;
     }
+}
+
+void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads, int loops = 10) {
+    int generationTime = 0;
+    int fillTime = 0;
+    int solveTime = 0;
+
+    MakePefrormanceTest(nx, ny, k1, k2, eps, threads, generationTime, fillTime, solveTime, loops);
 
     std::cout << "| " << std::setw(5) << threads;
     std::cout << " | " << std::setw(13) << generationTime / (double)loops;
@@ -257,8 +261,46 @@ void PerformanceTest() {
     }
 }
 
+void PerformanceSpeedUpTest() {
+    std::vector<double> gen;
+    std::vector<double> fill;
+    std::vector<double> solve;
+
+    for (int threads = 1; threads <= 32; threads *= 2) {
+        int generationTime = 0;
+        int fillTime = 0;
+        int solveTime = 0;
+
+        MakePefrormanceTest(1000, 1000, 29, 37, 1e-5, threads, generationTime, fillTime, solveTime, 5);
+
+        gen.push_back(generationTime);
+        fill.push_back(fillTime);
+        solve.push_back(solveTime);
+    }
+
+    std::cout << "### OpenMP ускорение" << std::endl;
+    std::cout << "|      Этап \\ T      |    2    |    4    |    8    |    16   |    32   |" << std::endl;
+    std::cout << "|                :-: |     :-: |     :-: |     :-: |     :-: |     :-: |" << std::endl;
+
+    std::cout << "|    Генерация графа |";
+    for (size_t i = 1; i < gen.size(); i++)
+        std::cout << " " << std::setw(7) << std::setprecision(3) << (gen[0] / gen[i]) << " |";
+    std::cout << std::endl;
+
+    std::cout << "| Заполнение матрицы |";
+    for (size_t i = 1; i < fill.size(); i++)
+        std::cout << " " << std::setw(7) << std::setprecision(3) << (fill[0] / fill[i]) << " |";
+    std::cout << std::endl;
+
+    std::cout << "|       Решение СЛАУ |";
+    for (size_t i = 1; i < solve.size(); i++)
+        std::cout << " " << std::setw(7) << std::setprecision(3) << (solve[0] / solve[i]) << " |";
+    std::cout << std::endl << std::endl;
+}
+
 int main() {
     setlocale(LC_ALL, "russian");
     VectorMathPerformanceTest();
     PerformanceTest();
+    PerformanceSpeedUpTest();
 }
