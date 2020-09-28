@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <omp.h>
 #include <cassert>
 #include "GraphGenerator.h"
 #include "GraphFiller.h"
@@ -13,7 +14,7 @@ void TestGenerator(int nx, int ny, int k1, int k2, int expectedN, int expectedEd
     int *ja;
 
     std::cout << "Generator test for (" << nx << "x" << ny << " for k = " << k1 << " and " << k2 << "): ";
-    GraphGenerator generator1(nx, ny, k1, k2, 32, false);
+    GraphGenerator generator1(nx, ny, k1, k2, false);
     generator1.Generate(n, ia, ja, false);
 
     assert(n == expectedN);
@@ -72,7 +73,7 @@ void TestFiller(int n, int *ia, int *ja, double *expectedA, double eps = 1e-15) 
     double *b;
 
     std::cout << "Fill test for n = " << n << ": ";
-    GraphFiller filler(n, ia, ja, 32, false);
+    GraphFiller filler(n, ia, ja, false);
     filler.Fill(a, b, false);
 
     for (int i = 0; i < ia[n]; i++)
@@ -136,13 +137,13 @@ void FillerTests() {
 
 void TestDot(double *x, double *y, int n, double expectedDot, double eps = 1e-15) {
     std::cout << "Dot test for n = " << n << ": ";
-    assert(fabs(Dot(x, y, n, 32) - expectedDot) < eps);
+    assert(fabs(Dot(x, y, n) - expectedDot) < eps);
     std::cout << "OK" << std::endl;
 }
 
 void TestLinearCombination(double *x, double *y, double a, double b, int n, double *expectedVector, double eps = 1e-15) {
     std::cout << "Linear combination test for n = " << n << " and a = " << a << ", b = " << b << ": ";
-    LinearCombination(a, x, b, y, n, 32);
+    LinearCombination(a, x, b, y, n);
 
     for (int i = 0; i < n; i++)
         assert(fabs(x[i] - expectedVector[i]) < eps);
@@ -154,7 +155,7 @@ void TestMatrixVectorMultiplication(int *ia, int *ja, double *a, int n, double *
     std::cout << "Test matrix to vector multiplication for n = " << n << ": ";
 
     double *y = new double[n];
-    MatrixVectorMultiplication(ia, ja, a, n, x, y, 32);
+    MatrixVectorMultiplication(ia, ja, a, n, x, y);
 
     for (int i = 0; i < n; i++)
         assert(fabs(y[i] - expectedVector[i]) < eps);
@@ -200,6 +201,8 @@ void VectorMathTests(double eps = 1e-15) {
 }
 
 int main() {
+    omp_set_num_threads(32);
+
     GeneratorTests();
     FillerTests();
     VectorMathTests();

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <omp.h>
+
 #include "ArgumentParser.h"
 #include "GraphGenerator.h"
 #include "GraphFiller.h"
@@ -33,25 +35,27 @@ void Solve(const ArgumentParser& parser) {
     int threads = parser.GetThreads();
     bool debug = parser.GetDebug();
 
+    omp_set_num_threads(threads); // задаём потоки
+
     // выходные аргументы
     int n = 0;
     int *ia = NULL;
     int *ja = NULL;
 
-    GraphGenerator generator(nx, ny, k1, k2, threads, debug);
+    GraphGenerator generator(nx, ny, k1, k2, debug);
     generator.Generate(n, ia, ja); // запускаем генерацию
 
     double *a = NULL;
     double *b = NULL;
 
-    GraphFiller filler(n, ia, ja, threads, debug);
+    GraphFiller filler(n, ia, ja, debug);
     filler.Fill(a, b); // заполняем массив
 
     double *x = NULL;
     int iterations;
     double res;
 
-    ConjugateGradientSolver solver(n, ia, ja, a, b, eps, threads, debug);
+    ConjugateGradientSolver solver(n, ia, ja, a, b, eps, debug);
     solver.Solve(x, iterations, res);
 
     // освобождаем выделенную память

@@ -83,7 +83,7 @@ int GraphGenerator::GetVerticesCount() const {
 LinkInfo* GraphGenerator::MakeEdges(int n) const {
     LinkInfo *edges = new LinkInfo[n]; // создаём список смежности
 
-    #pragma omp parallel for num_threads(threads)
+    #pragma omp parallel for
     for (int v = 0; v < n; v++) {
         int index = Vertex2Index(v);
         int x = index % nx;
@@ -173,7 +173,7 @@ int* GraphGenerator::MakeIA(LinkInfo *edges, int n) const {
 int* GraphGenerator::MakeJA(LinkInfo *edges, int n, int *ia) const {
     int *ja = new int[ia[n]];
 
-    #pragma omp parallel for num_threads(threads)
+    #pragma omp parallel for
     for (int i = 0; i < n; i++)
         for (int j = 0; j < edges[i].count; j++)
             ja[ia[i] + j] = edges[i].vertices[j];
@@ -192,14 +192,13 @@ int GraphGenerator::GetNotZeroCount(int *array, int n) const {
     return count;
 }
 
-GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, int threads, bool debug) {
+GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug) {
     this->nx = nx;
     this->ny = ny;
 
     this->k1 = k1;
     this->k2 = k2;
 
-    this->threads = threads;
     this->debug = debug;
 }
 

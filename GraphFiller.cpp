@@ -1,11 +1,10 @@
 #include "GraphFiller.h"
 
-GraphFiller::GraphFiller(int n, int *ia, int *ja, int threads, bool debug) {
+GraphFiller::GraphFiller(int n, int *ia, int *ja, bool debug) {
     this->n = n;
     this->ia = ia;
     this->ja = ja;
 
-    this->threads = threads;
     this->debug = debug;
 }
 
@@ -30,7 +29,7 @@ int GraphFiller::Fill(double *&a, double *&b, bool showInfo) const {
     a = new double[ia[n]];
     b = new double[n];
 
-    #pragma omp parallel for num_threads(threads)
+    #pragma omp parallel for
     for (int i = 0; i < n; i++) {
         double sum = 0;
         int diagIndex = -1;

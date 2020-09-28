@@ -14,7 +14,6 @@ class GraphGenerator {
     int ny;
     int k1;
     int k2;
-    int threads;
     bool debug;
 
     bool IsTriangleVertex(int v) const; // проверка, что вершина треугольная
@@ -35,7 +34,7 @@ class GraphGenerator {
     void PrintArray(int *array, int n, const char *message) const; // вывод массива
     void PrintInfo(int n, int *ia, int *ja, const ms &time) const; // вывод сводной информации
 public:
-    GraphGenerator(int nx, int ny, int k1, int k2, int threads, bool debug);
+    GraphGenerator(int nx, int ny, int k1, int k2, bool debug);
 
     int Generate(int &n, int *&ia, int *&ja, bool showInfo = true);
 };
