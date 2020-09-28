@@ -140,12 +140,13 @@ void LinearCombinationPerformanceTest() {
 
 void MatrixVectorMultiplicationPerformanceTest() {
     std::cout << "### Матрично-векторное произведение" << std::endl;
-    std::cout << "| T \\ N |  100  |  1000 |" << std::endl;
-    std::cout << "|   :-: |   :-: |   :-: |" << std::endl;
+    std::cout << "| T \\ N |  100  |  500  |  1000 |" << std::endl;
+    std::cout << "|   :-: |   :-: |   :-: |   :-: |" << std::endl;
 
     for (int threads = 1; threads <= 32; threads *= 2) {
         std::cout << "| " << std::setw(5) << threads;
         std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(100, threads);
+        std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(500, threads);
         std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(1000, threads);
         std::cout << " |" << std::endl;
     }
