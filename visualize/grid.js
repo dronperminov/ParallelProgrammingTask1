@@ -14,7 +14,7 @@ const VARIANT_A2 = 'A2'
 const VARIANT_B1 = 'B1'
 const VARIANT_B2 = 'B2'
 
-function Grid(canvas, nx, ny, k1, k2, variant, result) {
+function Grid(canvas, nx, ny, k1, k2, eps, variant, result) {
     this.canvas = canvas
     this.ctx = canvas.getContext('2d')
 
@@ -22,6 +22,7 @@ function Grid(canvas, nx, ny, k1, k2, variant, result) {
     this.ny = ny
     this.k1 = k1
     this.k2 = k2
+    this.eps = eps
     this.variant = variant
     this.result = result
 
@@ -157,9 +158,11 @@ Grid.prototype.MakeVerices = function() {
     this.result.innerHTML = "<b>Вариант:</b> " + this.variant
     this.result.innerHTML += "<br><b>Размер сетки:</b> " + this.nx + "x" + this.ny
     this.result.innerHTML += "<br><b>Параметры разбиения</b> " + this.k1 + ", " + this.k2
+    this.result.innerHTML += "<br><b>Точность решения</b> " + this.eps
     this.result.innerHTML += "<br><br><b>Прямоугольников:</b> " + rectangles
     this.result.innerHTML += "<br><b>Треугольников:</b> " + triangles
     this.result.innerHTML += "<br><b>Всего вершин:</b> " + this.vertices.length
+    this.result.innerHTML += "<br>"
 }
 
 // формирование рёбер для заданной вершины для варианта B1
@@ -321,6 +324,23 @@ Grid.prototype.MakeList = function() {
     return list
 }
 
+Grid.prototype.MakeSolve = function(ia, ja, a, b) {
+    let solver = new Solver(ia.length - 1, ia, ja, a, b, this.eps)
+    let solve = solver.Solve()
+
+    let html = "<br><b>Метод сопряжённых градиентов:</b>"
+
+    html += "<ul>"
+    for (let i = 0; i < solve.iterations.length; i++)
+        html += "<li>итерация" + solve.iterations[i].iteration + ", ||b-Ax||: " + solve.iterations[i].norm + ", rho: " + solve.iterations[i].rho + "</li>"
+    html += "</ul>"
+
+    if (document.getElementById("solve-box").checked)
+        html += "<b>x</b>: [" + solve.x.join(", ") + "]<br>"
+
+    return html
+}
+
 Grid.prototype.Round = function(x) {
     return Math.round(x * 100000) / 100000
 }
@@ -456,10 +476,19 @@ Grid.prototype.AddResults = function() {
     let ja = this.MakeJA()
     let filled = this.Fill(ia, ja)
 
-    this.result.innerHTML += "<br><br><b>IA:</b> [" + ia.join(", ") + "]"
-    this.result.innerHTML += "<br><b>JA:</b> [" + ja.join(", ") + "]"
-    this.result.innerHTML += "<br>" + this.MakeFill(ia, ja, filled.a, filled.b)
-    this.result.innerHTML += this.MakeList()
+    if (document.getElementById("edge-list-box").checked)
+        this.result.innerHTML += this.MakeList()
+
+    if (document.getElementById("portrait-box").checked) {
+        this.result.innerHTML += "<br><b>IA:</b> [" + ia.join(", ") + "]"
+        this.result.innerHTML += "<br><b>JA:</b> [" + ja.join(", ") + "]"
+        this.result.innerHTML += "<br>"
+    }
+
+    if (document.getElementById("matrix-box").checked)
+        this.result.innerHTML += this.MakeFill(ia, ja, filled.a, filled.b)
+
+    this.result.innerHTML += this.MakeSolve(ia, ja, filled.a, filled.b)
 }
 
 // отрисовка

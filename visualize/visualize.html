@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width" />
     <style>
         .num-input { width: 40px; }
+        .num-input-2 { width: 64px; }
         label { margin-right: 10px; }
+        ul { padding-left: 16px; margin-top: 0 }
         .visualizer { display: table; }
         .visualizer-controls { display: table-cell; width: 50%; }
         .visualizer-results { display: table-cell; }
@@ -26,6 +28,7 @@
                 <label>N<sub>y</sub>: <input class="num-input" id="ny-box" type="number" min="0" value="4"></label>
                 <label>K<sub>1</sub>: <input class="num-input" id="k1-box" type="number" min="0" value="3"></label>
                 <label>K<sub>2</sub>: <input class="num-input" id="k2-box" type="number" min="0" value="3"></label>
+                <label>eps</sub>: <input class="num-input-2" id="eps-box" type="number" min="0" value="0.0001" step="0.0001"></label>
                 <label>Вариант: <select id="variant-box">
                     <option value="A1">A1</option>
                     <option value="A2">A2</option>
@@ -33,6 +36,12 @@
                     <option value="B2" selected>B2</option>
                 </select></label>
                 <input type="submit" onclick="Draw()" value="Нарисовать">
+            </div>
+            <div>
+                <label><input type="checkbox" checked id="edge-list-box">Список смежности</label>
+                <label><input type="checkbox" checked id="portrait-box">Портрет матрицы</label>
+                <label><input type="checkbox" checked id="matrix-box">Матрица коэффициентов</label>
+                <label><input type="checkbox" checked id="solve-box">Решение</label>
             </div>
             <div class="scrollable">
                 <canvas id="canvas"></canvas>
@@ -43,17 +52,19 @@
     </div>
 
     <script src="grid.js"></script>
+    <script src="solver.js"></script>
     <script>
         function Draw() {
             let nx = +document.getElementById("nx-box").value
             let ny = +document.getElementById("ny-box").value
             let k1 = +document.getElementById("k1-box").value
             let k2 = +document.getElementById("k2-box").value
+            let eps = +document.getElementById("eps-box").value
             let variant = document.getElementById("variant-box").value
             let result = document.getElementById("result")
             
             let canvas = document.getElementById("canvas")
-            let grid = new Grid(canvas, nx, ny, k1, k2, variant, result)
+            let grid = new Grid(canvas, nx, ny, k1, k2, eps, variant, result)
 
             grid.Draw()
         }
