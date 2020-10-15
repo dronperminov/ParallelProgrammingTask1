@@ -42,7 +42,7 @@ void Solve(const ArgumentParser& parser) {
     int *ia = NULL;
     int *ja = NULL;
 
-    GraphGenerator generator(nx, ny, k1, k2, debug == FULL_DEBUG);
+    GraphGenerator generator(nx, ny, k1, k2, debug == FULL_DEBUG, threads);
     generator.Generate(n, ia, ja); // запускаем генерацию
 
     double *a = NULL;

@@ -208,7 +208,7 @@ void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads
         int iterations;
         double res;
 
-        GraphGenerator generator(nx, ny, k1, k2, false);
+        GraphGenerator generator(nx, ny, k1, k2, false, threads);
         generationTime += generator.Generate(n, ia, ja, false); // запускаем генерацию
 
         GraphFiller filler(n, ia, ja, false);

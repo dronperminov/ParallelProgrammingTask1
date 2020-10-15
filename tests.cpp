@@ -13,7 +13,7 @@ void TestGenerator(int nx, int ny, int k1, int k2, int expectedN, int expectedEd
     int *ja;
 
     std::cout << "Generator test for (" << nx << "x" << ny << " for k = " << k1 << " and " << k2 << "): ";
-    GraphGenerator generator1(nx, ny, k1, k2, false);
+    GraphGenerator generator1(nx, ny, k1, k2, false, 32);
     generator1.Generate(n, ia, ja, false);
 
     assert(n == expectedN);

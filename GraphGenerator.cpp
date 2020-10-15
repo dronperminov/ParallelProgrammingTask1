@@ -163,8 +163,49 @@ int* GraphGenerator::MakeIA(LinkInfo *edges, int n) const {
 
     ia[0] = 0;
 
-    for (int i = 0; i < n; i++)
-        ia[i + 1] = ia[i] + edges[i].count;
+    if (n < threads) {
+        for (int i = 0; i < n; i++)
+            ia[i + 1] = ia[i] + edges[i].count;
+
+        return ia;
+    }
+
+    int *sums = new int[threads + 1];
+    int *starts = new int[threads];
+    int *ends = new int[threads];
+
+    int divs = (n - threads + 1) / threads + 1;
+
+    for (int i = 0; i < threads; i++) {
+        starts[i] = i * divs;
+        ends[i] = (i + 1) * divs;
+    }
+
+    sums[0] = 0;
+    ends[threads - 1] = n;
+
+    #pragma omp parallel for
+    for (int t = 0; t < threads; t++) {
+        sums[t + 1] = edges[starts[t]].count;
+        ia[starts[t] + 1] = edges[starts[t]].count;
+
+        for (int i = starts[t] + 1; i < ends[t]; i++) {
+            ia[i + 1] = ia[i] + edges[i].count;
+            sums[t + 1] += edges[i].count;
+        }
+    }
+
+    for (int i = 1; i < threads; i++)
+        sums[i + 1] += sums[i];
+
+    #pragma omp parallel for
+    for (int t = 0; t < threads; t++)
+        for (int i = starts[t]; i < ends[t]; i++)
+            ia[i + 1] += sums[t];
+
+    delete[] sums;
+    delete[] starts;
+    delete[] ends;
 
     return ia;
 }
@@ -192,7 +233,7 @@ int GraphGenerator::GetNotZeroCount(int *array, int n) const {
     return count;
 }
 
-GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug) {
+GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug, int threads) {
     this->nx = nx;
     this->ny = ny;
 
@@ -200,6 +241,7 @@ GraphGenerator::GraphGenerator(int nx, int ny, int k1, int k2, bool debug) {
     this->k2 = k2;
 
     this->debug = debug;
+    this->threads = threads;
 }
 
 int GraphGenerator::Generate(int &n, int *&ia, int *&ja, bool showInfo) {
