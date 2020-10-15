@@ -5,7 +5,7 @@
 #include <cmath>
 #include "Types.h"
 
-const int DIAGONAL_DOMINANCE_COEFFICIENT = 1.234; // коэффициент диагонального преобладания
+const double DIAGONAL_DOMINANCE_COEFFICIENT = 1.234; // коэффициент диагонального преобладания
 
 // заполняющая функция для Aij
 inline double Fa(int i, int j) {

@@ -16,7 +16,7 @@ void GraphFiller::PrintDebug(double *a, double *b) const {
         std::cout << i << ": ";
 
         for (int j = ia[i]; j < ia[i + 1]; j++)
-            std::cout << std::left << std::setw(12) << a[ja[j]] << " ";
+            std::cout << std::left << std::setw(12) << a[j] << " ";
 
         std::cout << " = " << b[i] << "" << std::endl;
     }
