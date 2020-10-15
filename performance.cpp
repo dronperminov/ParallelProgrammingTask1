@@ -9,6 +9,9 @@
 #include "VectorMath.h"
 #include "Types.h"
 
+const int NEIGHBOURS_IN_MATRIX = 4; // количество соседей в матрице (в среднем)
+const int MAX_THREADS = 32; // максимальное количество потоков
+
 double GetRandomValue(double a = -50, double b = 50) {
     return a + rand() * (b - a) / RAND_MAX;
 }
@@ -72,20 +75,20 @@ double MatrixVectorMultiplicationPerformanceTest(int n, int threads, int loops =
     double *y = new double[n];
 
     int *ia = new int[n + 1];
-    int *ja = new int[n*n];
-    double *a = new double[n*n];
+    int *ja = new int[NEIGHBOURS_IN_MATRIX * n];
+    double *a = new double[NEIGHBOURS_IN_MATRIX * n];
 
     FillVector(x, n);
     FillVector(y, n);
-    FillVector(a, n*n);
+    FillVector(a, NEIGHBOURS_IN_MATRIX * n);
 
     ia[0] = 0;
 
     for (int i = 0; i < n; i++) {
-        ia[i + 1] = ia[i] + n;
+        ia[i + 1] = ia[i] + NEIGHBOURS_IN_MATRIX;
 
-        for (int j = 0; j < n; j++)
-            ja[i * n + j] = j;
+        for (int j = 0; j < NEIGHBOURS_IN_MATRIX; j++)
+            ja[i * NEIGHBOURS_IN_MATRIX + j] = (i % (n - NEIGHBOURS_IN_MATRIX)) + j;
     }
 
     TimePoint t0 = Time::now();
@@ -110,7 +113,7 @@ void DotPerformanceTest() {
     std::cout << "| T \\ N |   1000  |  10000  |  100000 | 1000000 |" << std::endl;
     std::cout << "|   :-: |     :-: |     :-: |     :-: |     :-: |" << std::endl;
 
-    for (int threads = 1; threads <= 32; threads *= 2) {
+    for (int threads = 1; threads <= MAX_THREADS; threads *= 2) {
         std::cout << "| " << std::setw(5) << threads;
         std::cout << " | " << std::setw(7) << DotPerformanceTest(1000, threads);
         std::cout << " | " << std::setw(7) << DotPerformanceTest(10000, threads);
@@ -127,7 +130,7 @@ void LinearCombinationPerformanceTest() {
     std::cout << "| T \\ N |   1000  |  10000  |  100000 | 1000000 |" << std::endl;
     std::cout << "|   :-: |     :-: |     :-: |     :-: |     :-: |" << std::endl;
 
-    for (int threads = 1; threads <= 32; threads *= 2) {
+    for (int threads = 1; threads <= MAX_THREADS; threads *= 2) {
         std::cout << "| " << std::setw(5) << threads;
         std::cout << " | " << std::setw(7) << LinearCombinationPerformanceTest(1000, threads);
         std::cout << " | " << std::setw(7) << LinearCombinationPerformanceTest(10000, threads);
@@ -141,15 +144,15 @@ void LinearCombinationPerformanceTest() {
 
 void MatrixVectorMultiplicationPerformanceTest() {
     std::cout << "### Матрично-векторное произведение" << std::endl;
-    std::cout << "| T \\ N |  250  |  500  |  1000 |  2000 |" << std::endl;
-    std::cout << "|   :-: |   :-: |   :-: |   :-: |   :-: |" << std::endl;
+    std::cout << "| T \\ N |  1000   |  10000  | 100000  | 1000000 |" << std::endl;
+    std::cout << "|   :-: |    :-:  |    :-:  |    :-:  |    :-:  |" << std::endl;
 
-    for (int threads = 1; threads <= 32; threads *= 2) {
+    for (int threads = 1; threads <= MAX_THREADS; threads *= 2) {
         std::cout << "| " << std::setw(5) << threads;
-        std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(250, threads);
-        std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(500, threads);
-        std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(1000, threads);
-        std::cout << " | " << std::setw(5) << MatrixVectorMultiplicationPerformanceTest(2000, threads);
+        std::cout << " | " << std::setw(7) << MatrixVectorMultiplicationPerformanceTest(1000, threads);
+        std::cout << " | " << std::setw(7) << MatrixVectorMultiplicationPerformanceTest(10000, threads);
+        std::cout << " | " << std::setw(7) << MatrixVectorMultiplicationPerformanceTest(100000, threads);
+        std::cout << " | " << std::setw(7) << MatrixVectorMultiplicationPerformanceTest(1000000, threads);
         std::cout << " |" << std::endl;
     }
 
@@ -157,34 +160,43 @@ void MatrixVectorMultiplicationPerformanceTest() {
 }
 
 void VectorMathSpeedUpTest() {
-    std::vector<double> spmv;
-    std::vector<double> dot;
-    std::vector<double> axpby;
+    for (int n = 1000; n <= 100000; n *= 10) {
+        std::vector<double> spmv;
+        std::vector<double> dot;
+        std::vector<double> axpby;
 
-    for (int threads = 1; threads <= 32; threads *= 2) {
-        dot.push_back(DotPerformanceTest(100000, threads));
-        axpby.push_back(LinearCombinationPerformanceTest(100000, threads));
-        spmv.push_back(MatrixVectorMultiplicationPerformanceTest(1000, threads));
+        for (int threads = 1; threads <= MAX_THREADS; threads *= 2) {
+            dot.push_back(DotPerformanceTest(n, threads));
+            axpby.push_back(LinearCombinationPerformanceTest(n, threads));
+            spmv.push_back(MatrixVectorMultiplicationPerformanceTest(n, threads));
+        }
+
+        std::cout << "### OpenMP ускорение (N = " << n << ")" << std::endl;
+        std::cout << "| Ядро \\ T |";
+
+        for (int threads = 2; threads <= MAX_THREADS; threads *= 2)
+            std::cout << " " << std::setw(7) << threads << " |";
+        std::cout << std::endl;
+        std::cout << "|      :-: |";
+        for (int threads = 2; threads <= MAX_THREADS; threads *= 2)
+            std::cout << " " << std::setw(7) << ":-:" << " |";
+        std::cout << std::endl;
+
+        std::cout << "| Dot      |";
+        for (size_t i = 1; i < dot.size(); i++)
+            std::cout << " " << std::setw(7) << std::setprecision(3) << (dot[0] / dot[i]) << " |";
+        std::cout << std::endl;
+
+        std::cout << "| axpby    |";
+        for (size_t i = 1; i < axpby.size(); i++)
+            std::cout << " " << std::setw(7) << std::setprecision(3) << (axpby[0] / axpby[i]) << " |";
+        std::cout << std::endl;
+
+        std::cout << "| SpMV     |";
+        for (size_t i = 1; i < spmv.size(); i++)
+            std::cout << " " << std::setw(7) << std::setprecision(3) << (spmv[0] / spmv[i]) << " |";
+        std::cout << std::endl << std::endl;
     }
-
-    std::cout << "### OpenMP ускорение" << std::endl;
-    std::cout << "|      Ядро \\ T      |    2    |    4    |    8    |    16   |    32   |" << std::endl;
-    std::cout << "|                :-: |     :-: |     :-: |     :-: |     :-: |     :-: |" << std::endl;
-
-    std::cout << "|   Dot (N = 100000) |";
-    for (size_t i = 1; i < dot.size(); i++)
-        std::cout << " " << std::setw(7) << std::setprecision(3) << (dot[0] / dot[i]) << " |";
-    std::cout << std::endl;
-
-    std::cout << "| axpby (N = 100000) |";
-    for (size_t i = 1; i < axpby.size(); i++)
-        std::cout << " " << std::setw(7) << std::setprecision(3) << (axpby[0] / axpby[i]) << " |";
-    std::cout << std::endl;
-
-    std::cout << "|    SpMV (N = 1000) |";
-    for (size_t i = 1; i < spmv.size(); i++)
-        std::cout << " " << std::setw(7) << std::setprecision(3) << (spmv[0] / spmv[i]) << " |";
-    std::cout << std::endl << std::endl;
 }
 
 void VectorMathPerformanceTest() {
@@ -253,7 +265,7 @@ void PerformanceTest() {
         std::cout << "|   T   | Генерация, мс | Заполнение, мс |  Решение, мс  |" << std::endl;
         std::cout << "|   :-: |           :-: |            :-: |           :-: |" << std::endl;
 
-        for (int threads = 1; threads <= 32; threads *= 2) {
+        for (int threads = 1; threads <= MAX_THREADS; threads *= 2) {
             MakePefrormanceTest(n[i], n[i], k1, k2, eps, threads);
         }
 
@@ -266,7 +278,7 @@ void PerformanceSpeedUpTest() {
     std::vector<double> fill;
     std::vector<double> solve;
 
-    for (int threads = 1; threads <= 32; threads *= 2) {
+    for (int threads = 1; threads <= MAX_THREADS; threads *= 2) {
         int generationTime = 0;
         int fillTime = 0;
         int solveTime = 0;
@@ -278,9 +290,15 @@ void PerformanceSpeedUpTest() {
         solve.push_back(solveTime);
     }
 
-    std::cout << "### OpenMP ускорение" << std::endl;
-    std::cout << "|      Этап \\ T      |    2    |    4    |    8    |    16   |    32   |" << std::endl;
-    std::cout << "|                :-: |     :-: |     :-: |     :-: |     :-: |     :-: |" << std::endl;
+    std::cout << "### OpenMP ускорение (Nx = 1000, Ny = 1000)" << std::endl;
+    std::cout << "|      Этап \\ T      |";
+    for (int threads = 2; threads <= MAX_THREADS; threads *= 2)
+        std::cout << " " << std::setw(7) << threads << " |";
+    std::cout << std::endl;
+    std::cout << "|                :-: |";
+    for (int threads = 2; threads <= MAX_THREADS; threads *= 2)
+        std::cout << " " << std::setw(7) << ":-:" << " |";
+    std::cout << std::endl;
 
     std::cout << "|    Генерация графа |";
     for (size_t i = 1; i < gen.size(); i++)
