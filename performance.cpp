@@ -199,12 +199,52 @@ void VectorMathSpeedUpTest() {
     }
 }
 
+void VectorMathGFlopsTest() {
+    std::cout << "### GFLOPS" << std::endl;
+    std::cout << "| Ядро \\ N |";
+
+    for (int n = 1000; n <= 1000000; n *= 10)
+        std::cout << " " << std::setw(9) << n << " |";
+    std::cout << std::endl;
+
+    std::cout << "|      :-: |";
+    for (int n = 1000; n <= 1000000; n *= 10)
+        std::cout << " " << std::setw(9) << ":-:" << " |";
+    std::cout << std::endl;
+
+    std::vector<double> spmv;
+    std::vector<double> dot;
+    std::vector<double> axpby;
+
+    std::cout << "| Dot      |";
+    for (int n = 1000; n <= 1000000; n *= 10) {
+        double time = DotPerformanceTest(n, 1) / 1000.0; // в секундах
+        std::cout << " " << std::setw(9) << (n * 2.0 / time / 1000000000.0) << " |";
+    }
+    std::cout << std::endl;
+
+    std::cout << "| axpby    |";
+    for (int n = 1000; n <= 1000000; n *= 10) {
+        double time = LinearCombinationPerformanceTest(n, 1) / 1000.0; // в секундах
+        std::cout << " " << std::setw(9) << (n * 3.0 / time / 1000000000.0) << " |";
+    }
+    std::cout << std::endl;
+
+    std::cout << "| SpMV     |";
+    for (int n = 1000; n <= 1000000; n *= 10) {
+        double time = MatrixVectorMultiplicationPerformanceTest(n, 1) / 1000.0; // в секундах
+        std::cout << " " << std::setw(9) << (n * 4.0 * NEIGHBOURS_IN_MATRIX / time / 1000000000.0) << " |";
+    }
+    std::cout << std::endl;
+}
+
 void VectorMathPerformanceTest() {
     std::cout << "## Производительность математических ядер" << std::endl;
     DotPerformanceTest();
     LinearCombinationPerformanceTest();
     MatrixVectorMultiplicationPerformanceTest();
     VectorMathSpeedUpTest();
+    VectorMathGFlopsTest();
 }
 
 void MakePefrormanceTest(int nx, int ny, int k1, int k2, double eps, int threads, int &generationTime, int &fillTime, int &solveTime, int loops) {
